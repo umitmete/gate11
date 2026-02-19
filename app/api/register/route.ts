@@ -36,8 +36,12 @@ export async function POST(request: Request) {
         });
 
         return NextResponse.json({ success: true, id: result.id, pdfUrl: result.registrationPdfUrl });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Registration failed:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        const errorMessage = error?.message || 'Unknown error';
+        return NextResponse.json({
+            error: 'Internal Server Error',
+            details: errorMessage
+        }, { status: 500 });
     }
 }

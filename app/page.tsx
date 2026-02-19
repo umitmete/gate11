@@ -16,12 +16,12 @@ export default function Home() {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const videoProgress = useMotionValue(0);
-  const smoothProgress = useSpring(videoProgress, { damping: 20, stiffness: 100, mass: 0.5 });
+  const smoothProgress = useSpring(videoProgress, { damping: 50, stiffness: 200, mass: 0.8 });
 
-  const textOpacity = useTransform(smoothProgress, [0.5, 0.95], [0, 1]);
-  const textY = useTransform(smoothProgress, [0.5, 1], [100, 0]);
-  const textScale = useTransform(smoothProgress, [0.5, 1], [0.95, 1]);
-  const overlayOpacity = useTransform(smoothProgress, [0.7, 0.98], [0, 1]);
+  const textOpacity = useTransform(smoothProgress, [0.5, 0.85], [0, 1]);
+  const textY = useTransform(smoothProgress, [0.5, 0.85], [60, 0]);
+  const textScale = useTransform(smoothProgress, [0.5, 0.85], [0.97, 1]);
+  const overlayOpacity = useTransform(smoothProgress, [0.7, 0.95], [0, 1]);
 
   useEffect(() => setMounted(true), []);
 
@@ -33,6 +33,7 @@ export default function Home() {
   useEffect(() => {
     let animationFrameId: number;
     const video = videoRef.current;
+    let currentRate = 1.0;
 
     const animate = () => {
       if (video) {
@@ -42,20 +43,22 @@ export default function Home() {
           const progress = currentTime / duration;
           videoProgress.set(progress);
 
+          let targetRate = 1.0;
           if (progress > 0.75) {
             const slowdownStart = 0.75;
             const slowdownEnd = 0.98;
 
             if (progress < slowdownEnd) {
               const factor = (progress - slowdownStart) / (slowdownEnd - slowdownStart);
-              const newRate = 1.0 - (factor * 0.9);
-              video.playbackRate = Math.max(0.1, newRate);
+              targetRate = 1.0 - (factor * 0.9);
             } else {
-              video.playbackRate = 0.1;
+              targetRate = 0.1;
             }
-          } else {
-            video.playbackRate = 1.0;
           }
+
+          // Smooth rate transition to prevent jitter
+          currentRate += (targetRate - currentRate) * 0.1;
+          video.playbackRate = Math.max(0.1, currentRate);
         }
       }
       animationFrameId = requestAnimationFrame(animate);
@@ -101,7 +104,8 @@ export default function Home() {
           style={{
             opacity: textOpacity,
             y: textY,
-            scale: textScale
+            scale: textScale,
+            willChange: 'transform, opacity'
           }}
           className="relative z-20 w-full max-w-7xl mx-auto px-6 text-center space-y-8 md:space-y-12"
         >

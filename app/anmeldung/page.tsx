@@ -211,11 +211,11 @@ export default function PreRegistrationPage() {
 
             if (!res.ok) {
                 const errorData = await res.json().catch(() => null);
-                const errorMsg = errorData?.error || `Server error: ${res.status}`;
+                const errorMsg = errorData?.details || errorData?.error || `Server error: ${res.status}`;
                 console.error('Registration API error:', errorMsg);
                 alert(language === 'tr'
-                    ? 'Kayıt gönderilemedi. Lütfen tekrar deneyin.'
-                    : 'Anmeldung konnte nicht gesendet werden. Bitte versuchen Sie es erneut.');
+                    ? `Kayıt gönderilemedi: ${errorMsg}`
+                    : `Anmeldung fehlgeschlagen: ${errorMsg}`);
                 return;
             }
 

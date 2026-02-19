@@ -12,29 +12,29 @@ export default function VehiclesPage() {
 
     const vehicles_data = {
         de: [
-            { name: "Golf 8 (2026)", type: "Schalt- & Automatikgetriebe", features: ["150 PS", "IQ.LIGHT", "Travel Assist"], image: "/images/Golf 8 (2026).png" },
-            { name: "BMW 118 (2025)", type: "Schalt- & Automatikgetriebe", features: ["M Sport", "Comfort Paket", "Live Cockpit"], image: "/images/BMW 118 (2025) .png" },
-            { name: "Kawasaki Z650 (2025)", type: "Motorrad (A2)", features: ["ABS", "LED", "Kompakt"], image: "/images/Kawasaki Z650 (2025).png" }
+            { name: "Golf 8 (2026)", type: "Schaltgetriebe", features: ["150 PS", "IQ.LIGHT", "Travel Assist"], image: "/images/Golf 8 (2026).png" },
+            { name: "BMW 116 (2025)", type: "Schalt- & Automatikgetriebe", features: ["M Sport", "Comfort Paket", "Live Cockpit"], image: "/images/BMW 118 (2025) .png" },
+            { name: "Kawasaki Z650 (2025)", type: "Motorrad", features: ["ABS", "LED", "Kompakt"], image: "/images/Kawasaki Z650 (2025).png" }
         ],
         en: [
-            { name: "Golf 8 (2026)", type: "Manual & Automatic", features: ["150 HP", "IQ.LIGHT", "Travel Assist"], image: "/images/Golf 8 (2026).png" },
-            { name: "BMW 118 (2025)", type: "Manual & Automatic", features: ["M Sport", "Comfort Package", "Live Cockpit"], image: "/images/BMW 118 (2025) .png" },
-            { name: "Kawasaki Z650 (2025)", type: "Motorcycle (A2)", features: ["ABS", "LED", "Compact"], image: "/images/Kawasaki Z650 (2025).png" }
+            { name: "Golf 8 (2026)", type: "Manual", features: ["150 HP", "IQ.LIGHT", "Travel Assist"], image: "/images/Golf 8 (2026).png" },
+            { name: "BMW 116 (2025)", type: "Manual & Automatic", features: ["M Sport", "Comfort Package", "Live Cockpit"], image: "/images/BMW 118 (2025) .png" },
+            { name: "Kawasaki Z650 (2025)", type: "Motorcycle", features: ["ABS", "LED", "Compact"], image: "/images/Kawasaki Z650 (2025).png" }
         ],
         tr: [
-            { name: "Golf 8 (2026)", type: "Manuel & Otomatik", features: ["150 HP", "IQ.LIGHT", "Sürüş Asistanı"], image: "/images/Golf 8 (2026).png" },
-            { name: "BMW 118 (2025)", type: "Manuel & Otomatik", features: ["M Paket", "Konfor Paketi", "Live Cockpit"], image: "/images/BMW 118 (2025) .png" },
-            { name: "Kawasaki Z650 (2025)", type: "Motosiklet (A2)", features: ["ABS", "LED Aydınlatma", "Kompakt Tasarım"], image: "/images/Kawasaki Z650 (2025).png" }
+            { name: "Golf 8 (2026)", type: "Manuel", features: ["150 HP", "IQ.LIGHT", "Sürüş Asistanı"], image: "/images/Golf 8 (2026).png" },
+            { name: "BMW 116 (2025)", type: "Manuel & Otomatik", features: ["M Paket", "Konfor Paketi", "Live Cockpit"], image: "/images/BMW 118 (2025) .png" },
+            { name: "Kawasaki Z650 (2025)", type: "Motosiklet", features: ["ABS", "LED Aydınlatma", "Kompakt Tasarım"], image: "/images/Kawasaki Z650 (2025).png" }
         ],
         ar: [
-            { name: "Golf 8 (2026)", type: "يدوي & أوتوماتيك", features: ["150 HP", "IQ.LIGHT", "Travel Assist"], image: "/images/Golf 8 (2026).png" },
-            { name: "BMW 118 (2025)", type: "يدوي & أوتوماتيك", features: ["M Sport", "باقة الراحة", "Live Cockpit"], image: "/images/BMW 118 (2025) .png" },
-            { name: "Kawasaki Z650 (2025)", type: "دراجة نارية (A2)", features: ["ABS", "LED", "مدمجة"], image: "/images/Kawasaki Z650 (2025).png" }
+            { name: "Golf 8 (2026)", type: "يدوي", features: ["150 HP", "IQ.LIGHT", "Travel Assist"], image: "/images/Golf 8 (2026).png" },
+            { name: "BMW 116 (2025)", type: "يدوي & أوتوماتيك", features: ["M Sport", "باقة الراحة", "Live Cockpit"], image: "/images/BMW 118 (2025) .png" },
+            { name: "Kawasaki Z650 (2025)", type: "دراجة نارية", features: ["ABS", "LED", "مدمجة"], image: "/images/Kawasaki Z650 (2025).png" }
         ],
         fa: [
-            { name: "Golf 8 (2026)", type: "دستی & اتوماتیک", features: ["۱۵۰ اسب بخار", "IQ.LIGHT", "کمک راننده"], image: "/images/Golf 8 (2026).png" },
-            { name: "BMW 118 (2025)", type: "دستی & اتوماتیک", features: ["M Sport", "پکیج راحتی", "Live Cockpit"], image: "/images/BMW 118 (2025) .png" },
-            { name: "Kawasaki Z650 (2025)", type: "موتورسیکلت (A2)", features: ["ABS", "LED", "کم جا"], image: "/images/Kawasaki Z650 (2025).png" }
+            { name: "Golf 8 (2026)", type: "دستی", features: ["۱۵۰ اسب بخار", "IQ.LIGHT", "کمک راننده"], image: "/images/Golf 8 (2026).png" },
+            { name: "BMW 116 (2025)", type: "دستی & اتوماتیک", features: ["M Sport", "پکیج راحتی", "Live Cockpit"], image: "/images/BMW 118 (2025) .png" },
+            { name: "Kawasaki Z650 (2025)", type: "موتورسیکلت", features: ["ABS", "LED", "کم جا"], image: "/images/Kawasaki Z650 (2025).png" }
         ]
     };
 

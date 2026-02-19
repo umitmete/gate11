@@ -326,7 +326,7 @@ export const translations = {
         cta: {
             title: 'Bereit für das Steuer?',
             description: 'Dein Führerschein wartet auf dich. Starte deine Reise heute bei Wiens exklusivster Fahrschule.',
-            button: 'STUDENT WERDEN'
+            button: 'SCHÜLER WERDEN'
         },
         contact: {
             station: 'Station',

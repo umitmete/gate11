@@ -37,6 +37,12 @@ const nextConfig = {
         optimizePackageImports: ['lucide-react', 'framer-motion'], // Paket import optimizasyonu
     },
 
+    // Vercel serverless'da dosya sistemi erişimi için
+    outputFileTracingIncludes: {
+        '/api/register': ['./data/**/*'],
+        '/api/registrations/[id]/pdf': ['./data/**/*'],
+    },
+
     // Cache headers
     async headers() {
         return [
@@ -87,7 +93,7 @@ const nextConfig = {
                     },
                     {
                         key: 'Permissions-Policy',
-                        value: 'camera=(), microphone=(), geolocation=()',
+                        value: 'camera=(self), microphone=(), geolocation=()',
                     },
                 ],
             },
