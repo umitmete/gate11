@@ -69,7 +69,7 @@ export async function submitRegistration(data: SubmitRegistrationParams) {
 
     // Server-side upload (Generated PDF is small, so this is fine)
     const { put } = await import('@vercel/blob');
-    const blob = await put(`registrations/${fileName}`, pdfBytes, {
+    const blob = await put(`registrations/${fileName}`, Buffer.from(pdfBytes), {
         access: 'public',
         addRandomSuffix: false // We already added UUID
     });
