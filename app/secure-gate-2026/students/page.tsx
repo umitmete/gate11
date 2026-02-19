@@ -8,9 +8,9 @@ export const dynamic = 'force-dynamic';
 async function getData() {
     try {
         const students = await prisma.$queryRaw`
-            SELECT * FROM StudentRegistration 
-            WHERE status = 'APPROVED' 
-            ORDER BY submittedAt DESC
+            SELECT * FROM "StudentRegistration" 
+            WHERE "status" = 'APPROVED' 
+            ORDER BY "submittedAt" DESC
         ` as any[];
 
         const plans = await prisma.yearlyPlan.findMany({

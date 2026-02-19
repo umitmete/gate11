@@ -12,7 +12,7 @@ async function getRegistrations() {
     try {
         // We use queryRaw because the Prisma Client might not be regenerated yet due to file locks
         // This allows us to access the new database columns immediately.
-        return await prisma.$queryRaw`SELECT * FROM StudentRegistration ORDER BY submittedAt DESC` as any[];
+        return await prisma.$queryRaw`SELECT * FROM "StudentRegistration" ORDER BY "submittedAt" DESC` as any[];
     } catch (error) {
         console.error('Admin Registrations Fetch Error:', error);
         return [];
