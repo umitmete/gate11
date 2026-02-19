@@ -1,0 +1,193 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// =========================================================
+// YILLIK PLAN SİSTEMİ
+// =========================================================
+
+model YearlyPlan {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  startDate   DateTime
+  endDate     DateTime
+  courseType  String   @default("DAY") // "DAY" veya "NIGHT" - Gündüz veya Akşam kursu
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([endDate])
+  @@index([isActive])
+  @@index([courseType])
+}
+
+// =========================================================
+// ONLINE ÖĞRENCİ ÖN KAYIT SİSTEMİ
+// =========================================================
+
+model StudentRegistration {
+  id             String   @id @default(cuid())
+  
+  // Kişisel Bilgiler
+  salutation     String   @default("Herr") // Anrede (Herr/Frau)
+  firstName      String
+  lastName       String
+  birthDate      DateTime
+  birthPlace     String   @default("")     // Geburtsort
+  nationality    String   @default("")     // Staatsbürgerschaft
+  
+  email          String
+  phone          String
+  
+  // Adres
+  street         String
+  zipCode        String
+  city           String
+  
+  // Kurs Bilgileri
+  courseType     String
+  licenseClass   String   @default("B") // Klassen (B, A, L17 vb.)
+  
+  // Belgeler
+  idCardUrl      String?
+  passportUrl    String?
+  firstAidUrl    String?
+  residenceUrl   String?
+  
+  // Sonra Getirilecek Belgeler
+  bringIdLater    Boolean @default(false)
+  bringPassportLater Boolean @default(false)
+  bringResidenceLater Boolean @default(false)
+  
+  // Durum
+  registrationPdfUrl String?
+  status         String @default("PENDING") // Durum takibi için (BEKLEMEDE vb.)
+  
+  submittedAt    DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// =========================================================
+// İÇERİK YÖNETİMİ
+// =========================================================
+
+model Course {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  price       Decimal 
+  duration    String
+  imageUrl    String?
+  isVisible   Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// =========================================================
+// KURS PAKETLERİ (Admin Panelinden Yönetilebilir)
+// =========================================================
+
+model CoursePackage {
+  id          String   @id @default(cuid())
+  
+  // Paket Bilgileri
+  title       String   // Örn: "B-PAKET"
+  tag         String   // Örn: "Der Klassiker"
+  price       String   // Örn: "€ 1.490"
+  
+  // Kurs Tipi
+  courseType  String   @default("DAY") // "DAY" veya "NIGHT"
+  
+  // Özellikler (JSON formatında)
+  features    String   // JSON array: ["Verwaltungsaufwand", "Versicherung", ...]
+  
+  // Çoklu Dil Desteği
+  titleDe     String?  // Almanca başlık
+  titleEn     String?  // İngilizce başlık
+  titleTr     String?  // Türkçe başlık
+  titleAr     String?  // Arapça başlık
+  titleFa     String?  // Farsça başlık
+  
+  tagDe       String?  // Almanca etiket
+  tagEn       String?  // İngilizce etiket
+  tagTr       String?  // Türkçe etiket
+  tagAr       String?  // Arapça etiket
+  tagFa       String?  // Farsça etiket
+  
+  featuresDe  String?  // Almanca özellikler (JSON)
+  featuresEn  String?  // İngilizce özellikler (JSON)
+  featuresTr  String?  // Türkçe özellikler (JSON)
+  featuresAr  String?  // Arapça özellikler (JSON)
+  featuresFa  String?  // Farsça özellikler (JSON)
+  
+  // Görünürlük ve Sıralama
+  isVisible   Boolean  @default(true)
+  showDate    Boolean  @default(true) // Tarih alanını göster/gizle
+  showPrice   Boolean  @default(true) // Fiyat alanını göster/gizle
+  order       Int      @default(0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([courseType])
+  @@index([isVisible])
+  @@index([order])
+}
+
+model Instructor {
+  id          String   @id @default(cuid())
+  name        String
+  role        String
+  bio         String?
+  imageUrl    String?
+  licenseTypes String @default("B") // Ehliyet sınıfları
+  isVisible   Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Vehicle {
+  id          String   @id @default(cuid())
+  name        String
+  brand       String
+  type        String
+  category    String
+  imageUrl    String?
+  features    String @default("") // Araç özellikleri
+  isVisible   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AdminUser {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("ADMIN")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+model CourseSchedule {
+  id           String   @id @default(cuid())
+  date         DateTime
+  time         String
+  abbreviation String   // abk.
+  topic        String   // themen
+  type         String   // "INTENSIVE" or "EVENING"
+  isVisible    Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([date])
+  @@index([type])
+}
