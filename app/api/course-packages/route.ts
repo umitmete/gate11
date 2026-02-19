@@ -14,8 +14,8 @@ export async function GET(request: Request) {
         // SQLite'da boolean değerler 1 ve 0 olarak tutulur.
         const packages = await prisma.$queryRaw`
             SELECT * FROM "CoursePackage" 
-            WHERE courseType = ${courseType} AND isVisible = 1
-            ORDER BY "order" ASC, createdAt DESC
+            WHERE "courseType" = ${courseType} AND "isVisible" = true
+            ORDER BY "order" ASC, "createdAt" DESC
         ` as any[];
 
         // Dil bazında formatlama ve Otomatik Çeviri
@@ -26,14 +26,14 @@ export async function GET(request: Request) {
             const rawShowDate = pkg.showDate ?? pkg.show_date ?? pkg.ShowDate ?? pkg.isVisibleDate ?? pkg.showdate;
             let showDate = true;
             if (rawShowDate !== undefined && rawShowDate !== null) {
-                showDate = Number(rawShowDate) === 1;
+                showDate = Boolean(rawShowDate);
             }
 
             // showPrice mantığı
             const rawShowPrice = pkg.showPrice ?? pkg.show_price ?? pkg.ShowPrice ?? pkg.isVisiblePrice ?? pkg.showprice;
             let showPrice = true;
             if (rawShowPrice !== undefined && rawShowPrice !== null) {
-                showPrice = Number(rawShowPrice) === 1;
+                showPrice = Boolean(rawShowPrice);
             }
 
             if (lang !== 'de') {

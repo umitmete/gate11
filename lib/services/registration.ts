@@ -81,18 +81,18 @@ export async function submitRegistration(data: SubmitRegistrationParams) {
     const now = new Date();
 
     await prisma.$executeRaw`
-        INSERT INTO StudentRegistration (
-            id, salutation, firstName, lastName, email, phone, birthDate, birthPlace, nationality,
-            street, zipCode, city, courseType, licenseClass, registrationPdfUrl, 
-            idCardUrl, passportUrl, firstAidUrl, residenceUrl, 
-            bringIdLater, bringPassportLater, bringResidenceLater, 
-            status, submittedAt, updatedAt
+        INSERT INTO "StudentRegistration" (
+            "id", "salutation", "firstName", "lastName", "email", "phone", "birthDate", "birthPlace", "nationality",
+            "street", "zipCode", "city", "courseType", "licenseClass", "registrationPdfUrl", 
+            "idCardUrl", "passportUrl", "firstAidUrl", "residenceUrl", 
+            "bringIdLater", "bringPassportLater", "bringResidenceLater", 
+            "status", "submittedAt", "updatedAt"
         ) VALUES (
             ${id}, ${data.salutation}, ${data.firstName}, ${data.lastName}, ${data.email}, ${data.phone}, ${data.birthDate.toISOString()}, ${data.birthPlace}, ${data.nationality},
             ${data.street}, ${data.zipCode}, ${data.city}, ${data.courseType}, ${data.licenseClass}, ${publicUrl},
             ${data.documentUrls?.idCard || null}, ${data.documentUrls?.passport || null}, 
             ${data.documentUrls?.firstAid || null}, ${data.documentUrls?.residence || null},
-            ${data.bringLater.idCard ? 1 : 0}, ${data.bringLater.passport ? 1 : 0}, ${data.bringLater.residence ? 1 : 0},
+            ${data.bringLater.idCard}, ${data.bringLater.passport}, ${data.bringLater.residence},
             'PENDING', ${now.toISOString()}, ${now.toISOString()}
         )
     `;
@@ -113,7 +113,7 @@ export async function submitRegistration(data: SubmitRegistrationParams) {
 export async function deleteRegistration(id: string) {
     // 1. Önce kayıt bilgilerini al (Dosya URL'lerine erişmek için)
     // Raw SQL ile
-    const registrations = await prisma.$queryRaw<any[]>`SELECT * FROM StudentRegistration WHERE id = ${id}`;
+    const registrations = await prisma.$queryRaw<any[]>`SELECT * FROM "StudentRegistration" WHERE id = ${id}`;
     const registration = registrations[0];
 
     if (registration) {
@@ -141,5 +141,5 @@ export async function deleteRegistration(id: string) {
     }
 
     // 3. Veritabanından kaydı sil
-    return await prisma.$executeRaw`DELETE FROM StudentRegistration WHERE id = ${id}`;
+    return await prisma.$executeRaw`DELETE FROM "StudentRegistration" WHERE id = ${id}`;
 }

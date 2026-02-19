@@ -12,7 +12,7 @@ export async function GET(request: Request) {
         // Ham SQL sorgusu ile eğitmenleri al
         const instructors = await prisma.$queryRaw`
             SELECT * FROM "Instructor" 
-            WHERE isVisible = 1
+            WHERE "isVisible" = true
             ORDER BY "order" ASC
         ` as any[];
 

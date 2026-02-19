@@ -118,18 +118,18 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
     try {
         const data = await request.json();
-        
+
         // Eğer global showDate güncellemesi ise
         if (data.showDate !== undefined) {
-             const newValue = data.showDate ? 1 : 0;
-             const count = await prisma.$executeRaw`
-                UPDATE "CoursePackage" SET showDate = ${newValue}
+            const newValue = Boolean(data.showDate);
+            const count = await prisma.$executeRaw`
+                UPDATE "CoursePackage" SET "showDate" = ${newValue}
              `;
-             return NextResponse.json({ success: true, count });
+            return NextResponse.json({ success: true, count });
         }
-        
+
         return NextResponse.json({ error: 'Invalid data' }, { status: 400 });
-        
+
     } catch (error) {
         console.error('Course Package Bulk Update Error:', error);
         return NextResponse.json({ error: 'Failed' }, { status: 500 });

@@ -80,9 +80,9 @@ export async function PATCH(
 
         let updateQuery = 'UPDATE "CoursePackage" SET ';
         const fields = [];
-        if (data.showDate !== undefined) fields.push(`"showDate" = ${data.showDate ? 1 : 0}`);
-        if (data.showPrice !== undefined) fields.push(`"showPrice" = ${data.showPrice ? 1 : 0}`);
-        if (data.isVisible !== undefined) fields.push(`"isVisible" = ${data.isVisible ? 1 : 0}`);
+        if (data.showDate !== undefined) fields.push(`"showDate" = ${data.showDate ? 'true' : 'false'}`);
+        if (data.showPrice !== undefined) fields.push(`"showPrice" = ${data.showPrice ? 'true' : 'false'}`);
+        if (data.isVisible !== undefined) fields.push(`"isVisible" = ${data.isVisible ? 'true' : 'false'}`);
         if (data.order !== undefined) fields.push(`"order" = ${Number(data.order)}`);
 
         if (fields.length > 0) {

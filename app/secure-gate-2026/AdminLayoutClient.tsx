@@ -21,7 +21,7 @@ export default function AdminLayoutClient({
         { href: '/secure-gate-2026', label: 'Übersicht', icon: Home },
         { href: '/secure-gate-2026/Voranmeldungen', label: 'Voranmeldungen', icon: FileText },
         { href: '/secure-gate-2026/Schuelerlisten', label: 'Schülerlisten', icon: Users },
-        { href: '/secure-gate-2026/Fahrakademie', label: 'Fahrakademie', icon: GraduationCap },
+        { href: '/secure-gate-2026/courses', label: 'Fahrakademie', icon: GraduationCap },
         { href: '/secure-gate-2026/kurse', label: 'Kurse', icon: Calendar },
         { href: '/secure-gate-2026/Jahresplan', label: 'Jahresplan', icon: Calendar },
         { href: '/secure-gate-2026/Team', label: 'Team', icon: Users },

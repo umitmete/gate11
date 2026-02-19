@@ -130,7 +130,7 @@ export default function CoursePackagesClient({ packages }: { packages: CoursePac
                 <div className="flex items-center gap-4">
 
                     <Link
-                        href="/admin/Fahrakademie/new"
+                        href="/secure-gate-2026/courses/new"
                         className="flex items-center gap-2 px-6 py-3 bg-[#D4AF37] text-black font-bold uppercase tracking-widest hover:bg-white transition-all"
                     >
                         <Plus className="w-5 h-5" /> Neues Paket
@@ -241,7 +241,7 @@ export default function CoursePackagesClient({ packages }: { packages: CoursePac
                                     {pkg.isVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                                 </button>
                                 <Link
-                                    href={`/admin/Fahrakademie/${pkg.id}`}
+                                    href={`/secure-gate-2026/courses/${pkg.id}`}
                                     className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[#D4AF37]/10 hover:bg-[#D4AF37]/20 text-[#D4AF37] text-xs font-bold uppercase tracking-widest transition-all"
                                 >
                                     <Edit className="w-4 h-4" /> Bearbeiten

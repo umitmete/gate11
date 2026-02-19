@@ -65,7 +65,7 @@ export default function CoursePackageForm({ initialData, isEdit = false, totalPa
             });
 
             if (res.ok) {
-                router.push('/admin/Fahrakademie');
+                router.push('/secure-gate-2026/courses');
                 router.refresh();
             } else {
                 alert('Speichern fehlgeschlagen!');
@@ -83,7 +83,7 @@ export default function CoursePackageForm({ initialData, isEdit = false, totalPa
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <a
-                        href="/admin/Fahrakademie"
+                        href="/secure-gate-2026/courses"
                         className="p-2 hover:bg-white/5 transition-all"
                     >
                         <ArrowLeft className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground" />
@@ -118,7 +118,7 @@ export default function CoursePackageForm({ initialData, isEdit = false, totalPa
                                 <input
                                     type="text"
                                     value={formData.titleDe}
-                                    onChange={(e) => setFormData({ ...formData,titleDe: e.target.value })}
+                                    onChange={(e) => setFormData({ ...formData, titleDe: e.target.value })}
                                     className="w-full bg-white/5 border border-white/10 p-3 text-white focus:border-[#D4AF37] outline-none text-sm"
                                     placeholder="B-PAKET"
                                     required

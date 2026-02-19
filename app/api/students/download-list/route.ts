@@ -13,9 +13,9 @@ export async function POST(request: Request) {
 
         const studentIdsStr = studentIds.map(id => `'${id}'`).join(',');
         const students = await prisma.$queryRawUnsafe(`
-            SELECT * FROM StudentRegistration 
+            SELECT * FROM "StudentRegistration" 
             WHERE id IN (${studentIdsStr})
-            ORDER BY lastName ASC
+            ORDER BY "lastName" ASC
         `) as any[];
 
         const pdfBytes = await generateStudentListPDF(groupName, students as any);

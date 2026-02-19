@@ -9,7 +9,7 @@ async function getCoursePackages() {
         // Raw query kullanıyoruz çünkü Prisma Client eski şemada kalmış olabilir
         const packages = await prisma.$queryRaw`
             SELECT * FROM "CoursePackage" 
-            ORDER BY "order" ASC, createdAt DESC
+            ORDER BY "order" ASC, "createdAt" DESC
         ` as any[];
 
         // Boolean alanları SQLite'dan doğru bir şekilde çevirelim
