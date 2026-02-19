@@ -392,6 +392,7 @@ export const translations = {
                 bringLater: 'Ich bringe es zur Anmeldung mit',
                 uploaded: 'HOCHGELADEN',
                 select: 'DATEI AUSWÄHLEN',
+                takePhoto: 'FOTO AUFNEHMEN',
                 front: 'Vorderseite',
                 back: 'Rückseite'
             },
@@ -995,6 +996,7 @@ export const translations = {
                 bringLater: 'I will bring it with me during registration',
                 uploaded: 'UPLOADED',
                 select: 'SELECT FILE',
+                takePhoto: 'TAKE PHOTO',
                 front: 'Front',
                 back: 'Back'
             },
@@ -1600,6 +1602,7 @@ export const translations = {
                 bringLater: 'Kayıtta yanımda getireceğim',
                 uploaded: 'YÜKLENDİ',
                 select: 'DOSYA SEÇİN',
+                takePhoto: 'FOTOĞRAF ÇEK',
                 front: 'Ön Yüz',
                 back: 'Arka Yüz'
             },
@@ -2200,7 +2203,10 @@ export const translations = {
                 optional: 'اختياري',
                 bringLater: 'سأحضره معي أثناء التسجيل',
                 uploaded: 'تم الرفع',
-                select: 'اختر ملفاً'
+                select: 'اختر ملفاً',
+                takePhoto: 'التقاط صورة',
+                front: 'الأمام',
+                back: 'الخلف'
             },
             nav: {
                 back: 'رجوع',
@@ -2799,7 +2805,10 @@ export const translations = {
                 optional: 'اختیاری',
                 bringLater: 'هنگام ثبت‌نام با خودم می‌آورم',
                 uploaded: 'آپلود شد',
-                select: 'انتخاب فایل'
+                select: 'انتخاب فایل',
+                takePhoto: 'گرفتن عکس',
+                front: 'جلو',
+                back: 'پشت'
             },
             nav: {
                 back: 'قبلی',

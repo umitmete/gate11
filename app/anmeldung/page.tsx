@@ -208,13 +208,32 @@ export default function PreRegistrationPage() {
                     packagePrice: price
                 }),
             });
+
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => null);
+                const errorMsg = errorData?.error || `Server error: ${res.status}`;
+                console.error('Registration API error:', errorMsg);
+                alert(language === 'tr'
+                    ? 'Kayıt gönderilemedi. Lütfen tekrar deneyin.'
+                    : 'Anmeldung konnte nicht gesendet werden. Bitte versuchen Sie es erneut.');
+                return;
+            }
+
             const data = await res.json();
             if (data.success) {
                 setSubmitted(true);
                 setPdfUrl(data.pdfUrl);
+            } else {
+                console.error('Registration failed:', data);
+                alert(language === 'tr'
+                    ? 'Kayıt gönderilemedi. Lütfen tekrar deneyin.'
+                    : 'Anmeldung konnte nicht gesendet werden. Bitte versuchen Sie es erneut.');
             }
         } catch (error) {
             console.error('Registration failed', error);
+            alert(language === 'tr'
+                ? 'Bağlantı hatası. Lütfen internet bağlantınızı kontrol edin ve tekrar deneyin.'
+                : 'Verbindungsfehler. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.');
         } finally {
             setLoading(false);
         }
@@ -559,7 +578,7 @@ export default function PreRegistrationPage() {
                                                                                 className="flex-1 flex flex-col items-center justify-center py-8 cursor-pointer hover:bg-primary/[0.03] transition-colors group/camera"
                                                                             >
                                                                                 <Camera className="text-primary/40 group-hover/camera:text-primary transition-colors w-6 h-6" />
-                                                                                <span className="text-[9px] font-bold uppercase tracking-widest mt-3 text-foreground/40 group-hover/camera:text-foreground transition-colors">Fotoğraf Çek</span>
+                                                                                <span className="text-[9px] font-bold uppercase tracking-widest mt-3 text-foreground/40 group-hover/camera:text-foreground transition-colors">{tp.docs.takePhoto}</span>
                                                                             </button>
                                                                         </div>
                                                                     )}
@@ -600,7 +619,7 @@ export default function PreRegistrationPage() {
                                                                         className="flex-1 flex flex-col items-center justify-center cursor-pointer hover:bg-primary/[0.03] transition-colors group/camera"
                                                                     >
                                                                         <Camera className="text-primary/40 group-hover/camera:text-primary transition-colors w-6 h-6" />
-                                                                        <span className="text-[9px] font-bold uppercase tracking-widest mt-3 text-foreground/40 group-hover/camera:text-foreground transition-colors">Fotoğraf Çek</span>
+                                                                        <span className="text-[9px] font-bold uppercase tracking-widest mt-3 text-foreground/40 group-hover/camera:text-foreground transition-colors">{tp.docs.takePhoto}</span>
                                                                     </button>
                                                                 </div>
                                                             )}
@@ -645,7 +664,7 @@ export default function PreRegistrationPage() {
                                                                                     className="flex-1 flex flex-col items-center justify-center cursor-pointer hover:bg-primary/[0.03] transition-colors group/camera"
                                                                                 >
                                                                                     <Camera className="text-primary/40 group-hover/camera:text-primary transition-colors w-6 h-6" />
-                                                                                    <span className="text-[9px] font-bold uppercase tracking-widest mt-3 text-foreground/40 group-hover/camera:text-foreground transition-colors">Fotoğraf Çek</span>
+                                                                                    <span className="text-[9px] font-bold uppercase tracking-widest mt-3 text-foreground/40 group-hover/camera:text-foreground transition-colors">{tp.docs.takePhoto}</span>
                                                                                 </button>
                                                                             </div>
                                                                         )}
@@ -680,7 +699,7 @@ export default function PreRegistrationPage() {
                                                                     className="flex-1 flex flex-col items-center justify-center p-8 cursor-pointer hover:bg-primary/[0.03] transition-colors group/camera"
                                                                 >
                                                                     <Camera className="text-primary/40 group-hover/camera:text-primary transition-colors w-6 h-6" />
-                                                                    <span className="text-[9px] font-bold uppercase tracking-widest mt-3 text-foreground/40 group-hover/camera:text-foreground transition-colors">Fotoğraf Çek</span>
+                                                                    <span className="text-[9px] font-bold uppercase tracking-widest mt-3 text-foreground/40 group-hover/camera:text-foreground transition-colors">{tp.docs.takePhoto}</span>
                                                                 </button>
                                                             </div>
                                                         )}
@@ -771,6 +790,7 @@ export default function PreRegistrationPage() {
                 onClose={() => setIsCameraOpen(false)}
                 onCapture={handleCameraCapture}
                 title={cameraTarget ? (tp.docs[cameraTarget as keyof typeof tp.docs] as string) : ''}
+                documentType={cameraTarget as any}
             />
         </main>
     );

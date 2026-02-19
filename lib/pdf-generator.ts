@@ -84,9 +84,9 @@ export async function generateRegistrationPDF(data: RegistrationData): Promise<U
             setField('Adresse', data.address.street);
             setField('PLZ/Ort', `${data.address.zipCode} ${data.address.city}`);
             setField('Telefonnummer', data.phone);
-            
-            const packageFull = data.packagePrice 
-                ? `${data.courseType} - ${data.packagePrice}` 
+
+            const packageFull = data.packagePrice
+                ? `${data.courseType} - ${data.packagePrice}`
                 : data.courseType;
             setField('Aktuelles Paket laut Preisliste', packageFull);
 
@@ -123,26 +123,49 @@ export async function generateRegistrationPDF(data: RegistrationData): Promise<U
                 });
 
                 try {
-                    // Dosya yolu DÜZELTİLDİ:
-                    // Eğer URL "/uploads/" ile başlıyorsa, bu "public" içinde değil, root/uploads içindedir.
-                    // Çünkü api/upload rotası dosyaları root/uploads altına kaydediyor.
+                    // URL veya yerel dosya yolundan resmi oku
+                    let imageBytes: Buffer;
+                    let ext: string;
 
-                    let imagePath;
-                    const cleanUrl = item.url!.startsWith('/') ? item.url!.slice(1) : item.url!;
+                    const url = item.url!;
 
-                    if (cleanUrl.startsWith('uploads/') || cleanUrl.startsWith('uploads\\')) {
-                        // "uploads/..." -> proje_root/uploads/...
-                        imagePath = path.join(process.cwd(), cleanUrl);
+                    if (url.startsWith('http://') || url.startsWith('https://')) {
+                        // Web URL (Vercel Blob vb.) -> fetch ile indir
+                        console.log(`Resim indiriliyor (URL): ${url}`);
+                        const response = await fetch(url);
+                        if (!response.ok) {
+                            throw new Error(`Resim indirilemedi: ${response.status} ${response.statusText}`);
+                        }
+                        const arrayBuffer = await response.arrayBuffer();
+                        imageBytes = Buffer.from(arrayBuffer);
+
+                        // URL'den uzantıyı belirle
+                        const contentType = response.headers.get('content-type') || '';
+                        if (contentType.includes('png')) {
+                            ext = '.png';
+                        } else if (contentType.includes('jpeg') || contentType.includes('jpg')) {
+                            ext = '.jpg';
+                        } else {
+                            // URL'den uzantı al
+                            const urlPath = new URL(url).pathname;
+                            ext = path.extname(urlPath).toLowerCase() || '.jpg';
+                        }
                     } else {
-                        // Diğer statik dosyalar -> proje_root/public/...
-                        imagePath = path.join(process.cwd(), 'public', cleanUrl);
+                        // Yerel dosya yolu
+                        const cleanUrl = url.startsWith('/') ? url.slice(1) : url;
+                        let imagePath;
+
+                        if (cleanUrl.startsWith('uploads/') || cleanUrl.startsWith('uploads\\')) {
+                            imagePath = path.join(process.cwd(), cleanUrl);
+                        } else {
+                            imagePath = path.join(process.cwd(), 'public', cleanUrl);
+                        }
+
+                        console.log(`Resim okunuyor (dosya): ${imagePath}`);
+                        await fs.access(imagePath);
+                        imageBytes = await fs.readFile(imagePath);
+                        ext = path.extname(imagePath).toLowerCase();
                     }
-
-                    console.log(`Resim okunuyor: ${imagePath}`);
-
-                    await fs.access(imagePath);
-                    const imageBytes = await fs.readFile(imagePath);
-                    const ext = path.extname(imagePath).toLowerCase();
 
                     let image;
                     if (ext === '.png') {

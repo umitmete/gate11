@@ -4,20 +4,59 @@ import React, { useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Camera, RotateCw, Check, AlertCircle } from 'lucide-react';
 
+export type DocumentType = 'idCard' | 'idCardBack' | 'passport' | 'residence' | 'residenceBack' | 'firstAid';
+
 interface CameraModalProps {
     isOpen: boolean;
     onClose: () => void;
     onCapture: (blob: Blob) => void;
     title: string;
+    documentType?: DocumentType;
 }
 
-export function CameraModal({ isOpen, onClose, onCapture, title }: CameraModalProps) {
+// Document template configurations
+// idCard/idCardBack: ID-1 standard (credit card size) - 85.6mm × 53.98mm → aspect ratio 1.586:1 (landscape)
+// passport: Passport book page - 125mm × 88mm → aspect ratio ~1.42:1 (landscape)
+// residence/residenceBack/firstAid: A4 paper - 210mm × 297mm → aspect ratio 1:1.414 (portrait)
+function getDocumentConfig(type?: DocumentType) {
+    switch (type) {
+        case 'passport':
+            return {
+                aspectRatio: 'aspect-[1.42/1]',    // Passport landscape ratio
+                cropRatio: 1.42,                     // Used for canvas crop
+                widthPercent: 0.80,                  // Slightly smaller to fit passport shape
+                label: 'PASSPORT',
+            };
+        case 'residence':
+        case 'residenceBack':
+        case 'firstAid':
+            return {
+                aspectRatio: 'aspect-[1/1.414]',    // A4 portrait ratio
+                cropRatio: 1 / 1.414,                // Portrait: width < height
+                widthPercent: 0.60,                  // Narrower since it's portrait
+                label: 'A4',
+            };
+        case 'idCard':
+        case 'idCardBack':
+        default:
+            return {
+                aspectRatio: 'aspect-[1.58/1]',     // ID-1 standard landscape ratio
+                cropRatio: 1.58,                      // Used for canvas crop
+                widthPercent: 0.85,                   // 85% of video width
+                label: 'ID',
+            };
+    }
+}
+
+export function CameraModal({ isOpen, onClose, onCapture, title, documentType }: CameraModalProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [stream, setStream] = useState<MediaStream | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isCapturing, setIsCapturing] = useState(false);
+
+    const config = getDocumentConfig(documentType);
 
     useEffect(() => {
         if (isOpen && !preview) {
@@ -41,7 +80,7 @@ export function CameraModal({ isOpen, onClose, onCapture, title }: CameraModalPr
             }
         } catch (err) {
             console.error("Camera error:", err);
-            setError("Kamera erişimi reddedildi veya bulunamadı. Lütfen tarayıcı izinlerini kontrol edin.");
+            setError("Kamera erişimi reddedildi veya bulunamadı. / Camera access denied or not found.");
         }
     };
 
@@ -61,21 +100,36 @@ export function CameraModal({ isOpen, onClose, onCapture, title }: CameraModalPr
         const context = canvas.getContext('2d');
 
         if (context) {
-            // ID-1 Standard Aspect Ratio: 1.58:1 (Credit Card, IDs)
-            const targetRatio = 1.58;
+            const cropRatio = config.cropRatio;
+            const widthPercent = config.widthPercent;
 
             const videoWidth = video.videoWidth;
             const videoHeight = video.videoHeight;
 
-            // The template is defined as 85% width in the UI. 
-            // We crop a high-resolution rectangle matching that visual guide.
-            let sourceWidth = videoWidth * 0.85;
-            let sourceHeight = sourceWidth / targetRatio;
+            let sourceWidth: number;
+            let sourceHeight: number;
 
-            // Safety check: ensure height doesn't exceed 85% of video height
-            if (sourceHeight > videoHeight * 0.85) {
+            if (cropRatio >= 1) {
+                // Landscape document (ID card, passport)
+                sourceWidth = videoWidth * widthPercent;
+                sourceHeight = sourceWidth / cropRatio;
+
+                // Safety check: ensure height doesn't exceed available space
+                if (sourceHeight > videoHeight * 0.85) {
+                    sourceHeight = videoHeight * 0.85;
+                    sourceWidth = sourceHeight * cropRatio;
+                }
+            } else {
+                // Portrait document (A4 - residence, first aid)
+                // For portrait, height is the dominant dimension
                 sourceHeight = videoHeight * 0.85;
-                sourceWidth = sourceHeight * targetRatio;
+                sourceWidth = sourceHeight * cropRatio;
+
+                // Safety check: ensure width doesn't exceed available space
+                if (sourceWidth > videoWidth * widthPercent) {
+                    sourceWidth = videoWidth * widthPercent;
+                    sourceHeight = sourceWidth / cropRatio;
+                }
             }
 
             const startX = (videoWidth - sourceWidth) / 2;
@@ -89,7 +143,7 @@ export function CameraModal({ isOpen, onClose, onCapture, title }: CameraModalPr
             context.drawImage(
                 video,
                 startX, startY, sourceWidth, sourceHeight, // Crop source
-                0, 0, canvas.width, canvas.height         // Target destination
+                0, 0, canvas.width, canvas.height           // Target destination
             );
 
             // Export with higher quality since it's a document scan
@@ -150,7 +204,7 @@ export function CameraModal({ isOpen, onClose, onCapture, title }: CameraModalPr
                                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
                                     <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
                                     <p className="text-white text-sm font-medium">{error}</p>
-                                    <button onClick={startCamera} className="mt-4 px-6 py-2 bg-white/10 text-white rounded-full text-xs font-bold uppercase tracking-widest">Yeniden Dene</button>
+                                    <button onClick={startCamera} className="mt-4 px-6 py-2 bg-white/10 text-white rounded-full text-xs font-bold uppercase tracking-widest">↻</button>
                                 </div>
                             ) : (
                                 <>
@@ -161,14 +215,24 @@ export function CameraModal({ isOpen, onClose, onCapture, title }: CameraModalPr
                                         className="w-full h-full object-cover"
                                     />
 
-                                    {/* Guidance Template / Overlay */}
+                                    {/* Guidance Template / Overlay - adapts to document type */}
                                     <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                                        <div className="w-[85%] aspect-[1.58/1] border-2 border-primary/50 rounded-xl relative shadow-[0_0_0_1000px_rgba(0,0,0,0.5)]">
+                                        <div className={`${documentType === 'passport'
+                                                ? 'w-[80%] aspect-[1.42/1]'
+                                                : (documentType === 'residence' || documentType === 'residenceBack' || documentType === 'firstAid')
+                                                    ? 'h-[85%] aspect-[1/1.414]'
+                                                    : 'w-[85%] aspect-[1.58/1]'
+                                            } border-2 border-primary/50 rounded-xl relative shadow-[0_0_0_1000px_rgba(0,0,0,0.5)]`}>
                                             {/* Corners */}
                                             <div className="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-primary rounded-tl-lg" />
                                             <div className="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-primary rounded-tr-lg" />
                                             <div className="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-primary rounded-bl-lg" />
                                             <div className="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-primary rounded-br-lg" />
+
+                                            {/* Document type indicator */}
+                                            <div className="absolute top-2 left-3 text-primary/40 text-[8px] font-bold uppercase tracking-widest">
+                                                {config.label}
+                                            </div>
 
                                             {/* Flash Effect Placeholder */}
                                             {isCapturing && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-white" />}
@@ -176,13 +240,18 @@ export function CameraModal({ isOpen, onClose, onCapture, title }: CameraModalPr
                                     </div>
 
                                     <div className="absolute bottom-10 left-0 right-0 flex justify-center px-8 text-center">
-                                        <p className="text-white/60 text-[10px] uppercase font-bold tracking-[0.2em]">Belgeyi çerçeve içine hizalayın</p>
+                                        <p className="text-white/60 text-[10px] uppercase font-bold tracking-[0.2em]">
+                                            {(documentType === 'residence' || documentType === 'residenceBack' || documentType === 'firstAid')
+                                                ? '↕ A4'
+                                                : '↔'
+                                            }
+                                        </p>
                                     </div>
                                 </>
                             )}
                         </>
                     ) : (
-                        <img src={preview} className="w-full h-full object-cover" alt="Capture preview" />
+                        <img src={preview} className="w-full h-full object-contain bg-black" alt="Capture preview" />
                     )}
                 </div>
 
