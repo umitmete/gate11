@@ -88,13 +88,13 @@ export async function submitRegistration(data: SubmitRegistrationParams) {
         await prisma.$executeRaw`
             INSERT INTO "StudentRegistration" (
                 "id", "salutation", "firstName", "lastName", "email", "phone", "birthDate", "birthPlace", "nationality",
-                "street", "zipCode", "city", "courseType", "licenseClass", "registrationPdfUrl", 
+                "street", "zipCode", "city", "courseType", "packagePrice", "licenseClass", "registrationPdfUrl", 
                 "idCardUrl", "passportUrl", "firstAidUrl", "residenceUrl", 
                 "bringIdLater", "bringPassportLater", "bringResidenceLater", 
                 "status", "submittedAt", "updatedAt"
             ) VALUES (
                 ${id}, ${data.salutation}, ${data.firstName}, ${data.lastName}, ${data.email}, ${data.phone}, ${data.birthDate}::timestamp, ${data.birthPlace}, ${data.nationality},
-                ${data.street}, ${data.zipCode}, ${data.city}, ${data.courseType}, ${data.licenseClass}, ${publicUrl},
+                ${data.street}, ${data.zipCode}, ${data.city}, ${data.courseType}, ${data.packagePrice || null}, ${data.licenseClass}, ${publicUrl},
                 ${data.documentUrls?.idCard || null}, ${data.documentUrls?.passport || null}, 
                 ${data.documentUrls?.firstAid || null}, ${data.documentUrls?.residence || null},
                 ${data.bringLater.idCard}, ${data.bringLater.passport}, ${data.bringLater.residence},

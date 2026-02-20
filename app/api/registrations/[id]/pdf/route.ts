@@ -17,6 +17,19 @@ export async function GET(
         if (!student) {
             return NextResponse.json({ error: 'Registration not found' }, { status: 404 });
         }
+        // If packagePrice is not stored, try to look it up from CoursePackage
+        let packagePrice = student.packagePrice || '';
+        if (!packagePrice && student.courseType) {
+            try {
+                const pkg = await prisma.coursePackage.findFirst({
+                    where: { title: student.courseType },
+                    select: { price: true }
+                });
+                if (pkg) packagePrice = pkg.price;
+            } catch (e) {
+                // ignore lookup errors
+            }
+        }
 
         // Prepare data for PDF generator
         const pdfData = {
@@ -26,6 +39,7 @@ export async function GET(
             email: student.email,
             phone: student.phone,
             courseType: student.courseType,
+            packagePrice,
             licenseClass: student.licenseClass || '',
             birthDate: new Date(student.birthDate),
             birthPlace: student.birthPlace || '',

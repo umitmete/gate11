@@ -53,6 +53,7 @@ model StudentRegistration {
   
   // Kurs Bilgileri
   courseType     String
+  packagePrice   String?  // Paket fiyatı (z.B. "€ 1.490")
   licenseClass   String   @default("B") // Klassen (B, A, L17 vb.)
   
   // Belgeler
