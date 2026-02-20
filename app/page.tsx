@@ -16,12 +16,13 @@ export default function Home() {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const videoProgress = useMotionValue(0);
-  const smoothProgress = useSpring(videoProgress, { damping: 20, stiffness: 100, mass: 0.5 });
+  const smoothProgress = useSpring(videoProgress, { damping: 50, stiffness: 200, mass: 0.8 });
 
-  const textOpacity = useTransform(smoothProgress, [0.5, 0.95], [0, 1]);
-  const textY = useTransform(smoothProgress, [0.5, 1], [100, 0]);
-  const textScale = useTransform(smoothProgress, [0.5, 1], [0.95, 1]);
-  const overlayOpacity = useTransform(smoothProgress, [0.7, 0.98], [0, 1]);
+  // Animasyonların 0.85'te sonlanmasını sağlıyoruz, böylece video bitmeden yazılar tamamen durmuş oluyor (titreme/jitter önleniyor)
+  const textOpacity = useTransform(smoothProgress, [0.5, 0.85], [0, 1]);
+  const textY = useTransform(smoothProgress, [0.5, 0.85], [60, 0]);
+  const textScale = useTransform(smoothProgress, [0.5, 0.85], [0.97, 1]);
+  const overlayOpacity = useTransform(smoothProgress, [0.7, 0.95], [0, 1]);
 
   useEffect(() => setMounted(true), []);
 
@@ -33,6 +34,12 @@ export default function Home() {
   useEffect(() => {
     let animationFrameId: number;
     const video = videoRef.current;
+    let maxProgress = 0;
+
+    // Mobilde auto-play bazen ilk an takılabilir diye destek fırlatması
+    if (video && video.paused) {
+      video.play().catch(() => { });
+    }
 
     const animate = () => {
       if (video) {
@@ -40,22 +47,17 @@ export default function Home() {
 
         if (duration > 0) {
           const progress = currentTime / duration;
-          videoProgress.set(progress);
 
-          if (progress > 0.75) {
-            const slowdownStart = 0.75;
-            const slowdownEnd = 0.98;
-
-            if (progress < slowdownEnd) {
-              const factor = (progress - slowdownStart) / (slowdownEnd - slowdownStart);
-              const newRate = 1.0 - (factor * 0.9);
-              video.playbackRate = Math.max(0.1, newRate);
-            } else {
-              video.playbackRate = 0.1;
-            }
-          } else {
-            video.playbackRate = 1.0;
+          // Mobilde video aniden geri atarsa veya bitince sıfırlanırsa ilerlemeyi koru
+          if (progress > maxProgress) {
+            maxProgress = progress;
           }
+
+          if (video.ended || progress > 0.99) {
+            maxProgress = 1.0;
+          }
+
+          videoProgress.set(maxProgress);
         }
       }
       animationFrameId = requestAnimationFrame(animate);
@@ -101,7 +103,8 @@ export default function Home() {
           style={{
             opacity: textOpacity,
             y: textY,
-            scale: textScale
+            scale: textScale,
+            willChange: 'transform, opacity'
           }}
           className="relative z-20 w-full max-w-7xl mx-auto px-6 text-center space-y-8 md:space-y-12"
         >
