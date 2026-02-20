@@ -203,6 +203,25 @@ export default function CoursesPage() {
                     })}
                 </div>
 
+                {/* Externe Gebühren Notu */}
+                <div className="max-w-5xl mx-auto mb-16 p-6 md:p-8 bg-primary/[0.02] border border-primary/10 rounded-2xl backdrop-blur-sm text-center shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+                    <h3 className="text-primary text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] mb-4">
+                        Externe Gebühren
+                        <span className="text-muted-foreground/60 normal-case tracking-normal font-normal ml-2 font-serif italic block md:inline mt-1 md:mt-0">
+                            (nicht im Kurspreis enthalten)
+                        </span>
+                    </h3>
+                    <div className="flex flex-col md:flex-row flex-wrap justify-center items-center gap-x-6 gap-y-3 text-muted-foreground/80 text-xs md:text-sm">
+                        <span className="whitespace-nowrap flex items-center gap-2">Ärztliche Untersuchung <strong className="text-foreground font-medium ml-1">ca. 35–50 €</strong></span>
+                        <div className="w-1 h-1 rounded-full bg-primary/40 hidden md:block"></div>
+                        <span className="whitespace-nowrap flex items-center gap-2">Erste-Hilfe-Kurs <strong className="text-foreground font-medium ml-1">ca. 70–90 €</strong></span>
+                        <div className="w-1 h-1 rounded-full bg-primary/40 hidden md:block"></div>
+                        <span className="whitespace-nowrap flex items-center gap-2">Führerscheingebühr (Verkehrsamt) <strong className="text-foreground font-medium ml-1">ca. 90 €</strong></span>
+                        <div className="w-1 h-1 rounded-full bg-primary/40 hidden md:block"></div>
+                        <span className="whitespace-nowrap flex items-center gap-2">Scheckkartengebühr <strong className="text-foreground font-medium ml-1">ca. 70–75 €</strong></span>
+                    </div>
+                </div>
+
                 <div className="text-center pb-20">
                     <Link
                         href="/anmeldung"
