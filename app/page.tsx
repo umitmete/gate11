@@ -25,28 +25,6 @@ export default function Home() {
 
   useEffect(() => setMounted(true), []);
 
-  // Mobilde video autoplay'i garantilemek için
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    const tryPlay = () => {
-      video.play().catch(() => { });
-    };
-
-    // Video yüklendiğinde oynat
-    video.addEventListener('canplay', tryPlay);
-    // Kullanıcı etkileşiminde de dene (iOS fallback)
-    document.addEventListener('touchstart', tryPlay, { once: true });
-
-    tryPlay();
-
-    return () => {
-      video.removeEventListener('canplay', tryPlay);
-      document.removeEventListener('touchstart', tryPlay);
-    };
-  }, []);
-
   const currentTheme = theme === 'system' ? resolvedTheme : theme;
   const logoSrc = mounted && currentTheme === 'light'
     ? "/Gate11_Logo_siyah.svg"
