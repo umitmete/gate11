@@ -78,15 +78,13 @@ export default async function AdminRegistrationsPage() {
                                         isApproved={reg.status === 'APPROVED'}
                                     />
                                     <EditRegistrationForm registration={reg} />
-                                    {reg.registrationPdfUrl && (
-                                        <a
-                                            href={reg.registrationPdfUrl}
-                                            target="_blank"
-                                            className="flex items-center gap-2 px-4 py-2 bg-white/5 text-white text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-all border border-white/10"
-                                        >
-                                            <Download className="w-3 h-3 md:w-4 md:h-4" /> PDF
-                                        </a>
-                                    )}
+                                    <a
+                                        href={`/api/registrations/${reg.id}/pdf`}
+                                        target="_blank"
+                                        className="flex items-center gap-2 px-4 py-2 bg-white/5 text-white text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-all border border-white/10"
+                                    >
+                                        <Download className="w-3 h-3 md:w-4 md:h-4" /> PDF
+                                    </a>
                                     <DeleteRegistrationButton
                                         registrationId={reg.id}
                                         studentName={`${reg.firstName} ${reg.lastName}`}
