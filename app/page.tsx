@@ -162,7 +162,7 @@ export default function Home() {
         <div className="container mx-auto px-6">
           <div className="flex flex-col lg:flex-row justify-between items-center lg:items-end mb-16 md:mb-24 gap-8 text-center lg:text-left">
             <div className="max-w-xl space-y-4">
-              <span className="text-primary text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] font-serif">Gate11 Standartları</span>
+              <span className="text-primary text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] font-serif">{t.features.badge}</span>
               <h2 className="text-3xl md:text-6xl font-serif text-foreground leading-[1.2] flex flex-wrap justify-center lg:justify-start items-center gap-x-3 md:gap-x-4">
                 {t.features.title.split('GATE11')[0]}
                 <img src={logoSrc} alt="GATE 11" className="h-8 md:h-16 w-auto object-contain inline-block" />
