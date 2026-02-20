@@ -197,7 +197,7 @@ export default function EditRegistrationForm({ registration }: EditRegistrationF
                                         value={formData.licenseClass}
                                         onChange={(e) => setFormData({ ...formData, licenseClass: e.target.value })}
                                     >
-                                        {['B', 'A', 'L17', 'B+A', 'Moped'].map((cls) => (
+                                        {['B', 'A', 'L17', 'B+A'].map((cls) => (
                                             <option key={cls} value={cls} className="bg-[#0a0a0a] text-white">{cls}</option>
                                         ))}
                                     </select>

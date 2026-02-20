@@ -456,7 +456,7 @@ export default function PreRegistrationPage() {
                                             <div className="space-y-3 pb-8 border-b border-primary/10">
                                                 <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Führerscheinklasse</label>
                                                 <div className="flex gap-4 flex-wrap">
-                                                    {['B', 'A', 'L17', 'B+A', 'Moped'].map((cls) => (
+                                                    {['B', 'A', 'L17', 'B+A'].map((cls) => (
                                                         <div
                                                             key={cls}
                                                             onClick={() => updateField('licenseClass', cls)}
@@ -478,13 +478,11 @@ export default function PreRegistrationPage() {
                                                 </div>
                                             ) : (
                                                 <>
-                                                    {/* Day Courses */}
                                                     <div className="space-y-4">
-                                                        <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-primary/60 pl-1">{t.nav.courses_day}</h3>
                                                         <div className="grid grid-cols-1 gap-4">
                                                             {dayPackages.map((pkg: any) => (
                                                                 <div
-                                                                    key={`day-${pkg.title}`}
+                                                                    key={`course-${pkg.title}`}
                                                                     onClick={() => updateField('courseType', pkg.title)}
                                                                     className={`p-6 border cursor-pointer transition-all flex justify-between items-center group ${formData.courseType === pkg.title ? 'border-primary bg-primary/[0.08]' : 'border-primary/10 hover:border-primary/30 bg-primary/[0.01]'}`}
                                                                 >
@@ -499,34 +497,6 @@ export default function PreRegistrationPage() {
                                                             ))}
                                                         </div>
                                                     </div>
-
-                                                    {/* Night Courses */}
-                                                    {nightPackages.length > 0 && (
-                                                        <div className="space-y-4 pt-4 border-t border-primary/10">
-                                                            <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-primary/60 pl-1">{t.nav.courses_night}</h3>
-                                                            <div className="grid grid-cols-1 gap-4">
-                                                                {nightPackages.map((pkg: any) => {
-                                                                    // If the title doesn't contain (Abend) already, add it for clarity in select
-                                                                    const nightTitle = pkg.title.toLowerCase().includes('abend') ? pkg.title : `${pkg.title} (Abend)`;
-                                                                    return (
-                                                                        <div
-                                                                            key={`night-${pkg.title}`}
-                                                                            onClick={() => updateField('courseType', nightTitle)}
-                                                                            className={`p-6 border cursor-pointer transition-all flex justify-between items-center group ${formData.courseType === nightTitle ? 'border-primary bg-primary/[0.08]' : 'border-primary/10 hover:border-primary/30 bg-primary/[0.01]'}`}
-                                                                        >
-                                                                            <div>
-                                                                                <div className={`font-serif text-lg transition-colors ${formData.courseType === nightTitle ? 'text-foreground font-bold' : 'text-foreground/60'}`}>{pkg.title} <span className="text-sm opacity-50 not-italic font-sans ml-1">(Abend)</span></div>
-                                                                                <div className="text-[10px] font-bold uppercase tracking-widest text-primary mt-1">{pkg.tag} {pkg.showPrice !== false && `— ${pkg.price}`}</div>
-                                                                            </div>
-                                                                            <div className={`w-6 h-6 rounded-full border flex items-center justify-center transition-all ${formData.courseType === nightTitle ? 'border-primary bg-primary' : 'border-primary/20'}`}>
-                                                                                {formData.courseType === nightTitle && <Check className="w-4 h-4 text-primary-foreground" />}
-                                                                            </div>
-                                                                        </div>
-                                                                    );
-                                                                })}
-                                                            </div>
-                                                        </div>
-                                                    )}
                                                 </>
                                             )}
                                         </div>
