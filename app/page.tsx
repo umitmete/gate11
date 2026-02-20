@@ -75,7 +75,7 @@ export default function Home() {
       <Navbar />
 
       {/* Giriş Bölümü (Hero) */}
-      <section className="relative min-h-[calc(100vh-80px)] flex items-center justify-center overflow-hidden bg-background mt-20">
+      <section className="relative min-h-[calc(100vh-80px)] flex items-start pt-[15vh] md:items-center md:pt-0 justify-center overflow-hidden bg-background mt-20">
         <div className="absolute inset-0 z-0">
           <video
             ref={videoRef}
