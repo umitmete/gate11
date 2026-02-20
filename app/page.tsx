@@ -81,7 +81,7 @@ export default function Home() {
           <video
             ref={videoRef}
             src="/images/hero/BMW_M2_CS_2025.mp4"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain md:object-cover"
             autoPlay
             muted
             playsInline
