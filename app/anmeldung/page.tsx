@@ -454,7 +454,7 @@ export default function PreRegistrationPage() {
                                         <div className="space-y-8">
                                             {/* License Class */}
                                             <div className="space-y-3 pb-8 border-b border-primary/10">
-                                                <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Führerscheinklasse</label>
+                                                <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">{t.nav.licenseClass || "FÜHRERSCHEINKLASSE"}</label>
                                                 <div className="flex gap-4 flex-wrap">
                                                     {['B', 'A', 'L17', 'B+A'].map((cls) => (
                                                         <div
