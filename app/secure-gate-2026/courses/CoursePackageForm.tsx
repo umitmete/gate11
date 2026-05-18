@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save, Plus, Trash2, Loader2 } from 'lucide-react';
 
@@ -22,8 +22,37 @@ export default function CoursePackageForm({ initialData, isEdit = false, totalPa
         courseType: initialData?.courseType || 'DAY',
         isVisible: initialData?.isVisible ?? true,
         order: initialData?.order ?? totalPackages, // Yeni paket için en son pozisyon
-        autoTranslate: true // Varsayılan olarak otomatik çeviri açık
+        autoTranslate: true, // Varsayılan olarak otomatik çeviri açık
+        categoryId: initialData?.categoryId || ''
     });
+
+    const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
+    const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(() => {
+        try {
+            if (initialData?.categoryIds) {
+                return JSON.parse(initialData.categoryIds);
+            }
+            if (initialData?.categoryId) {
+                return [initialData.categoryId];
+            }
+        } catch (e) {}
+        return [];
+    });
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const res = await fetch('/api/admin/package-categories');
+                if (res.ok) {
+                    const data = await res.json();
+                    setCategories(data);
+                }
+            } catch (error) {
+                console.error('Kategoriler yüklenemedi:', error);
+            }
+        };
+        fetchCategories();
+    }, []);
 
     const [featuresDe, setFeaturesDe] = useState<string[]>(
         initialData?.featuresDe ? JSON.parse(initialData.featuresDe) :
@@ -50,6 +79,8 @@ export default function CoursePackageForm({ initialData, isEdit = false, totalPa
                 tag: formData.tagDe,     // Legacy-Kompatibilität
                 features: JSON.stringify(featuresDe.filter(f => f.trim())),
                 featuresDe: JSON.stringify(featuresDe.filter(f => f.trim())),
+                categoryIds: JSON.stringify(selectedCategoryIds),
+                categoryId: selectedCategoryIds[0] || null
             };
 
             const url = isEdit
@@ -183,6 +214,37 @@ export default function CoursePackageForm({ initialData, isEdit = false, totalPa
                             className="w-full bg-white/5 border border-white/10 p-3 text-white focus:border-[#D4AF37] outline-none text-sm"
                             placeholder="Leer lassen für 'Preis auf Anfrage'"
                         />
+                    </div>
+
+                    {/* Kategori */}
+                    <div className="bg-[#0a0a0a] border border-white/10 p-4 md:p-6">
+                        <label className="text-xs font-bold uppercase tracking-widest text-[#D4AF37] block mb-3">Kategorien / Filter-Tabs</label>
+                        <div className="space-y-3 max-h-[150px] overflow-y-auto pr-2">
+                            {categories.length === 0 ? (
+                                <span className="text-xs text-gray-500 italic">Keine Kategorien vorhanden.</span>
+                            ) : (
+                                categories.map((cat) => {
+                                    const isChecked = selectedCategoryIds.includes(cat.id);
+                                    return (
+                                        <label key={cat.id} className="flex items-center gap-3 cursor-pointer group text-sm text-white">
+                                            <input
+                                                type="checkbox"
+                                                checked={isChecked}
+                                                onChange={(e) => {
+                                                    if (e.target.checked) {
+                                                        setSelectedCategoryIds([...selectedCategoryIds, cat.id]);
+                                                    } else {
+                                                        setSelectedCategoryIds(selectedCategoryIds.filter(id => id !== cat.id));
+                                                    }
+                                                }}
+                                                className="w-4 h-4 rounded border-white/10 bg-white/5 checked:bg-[#D4AF37] cursor-pointer"
+                                            />
+                                            <span className="group-hover:text-[#D4AF37] transition-colors font-medium">{cat.name}</span>
+                                        </label>
+                                    );
+                                })
+                            )}
+                        </div>
                     </div>
 
                     {/* Sortierung */}

@@ -15,6 +15,8 @@ export default function CoursesPage() {
     const [courseInfo, setCourseInfo] = useState<Record<string, { date: string, rawDate?: string, note?: string }>>({});
     const [expandedIndices, setExpandedIndices] = useState<number[]>([]);
     const [packages, setPackages] = useState<any[]>([]);
+    const [categories, setCategories] = useState<{ id: string, name: string }[]>([]);
+    const [selectedTab, setSelectedTab] = useState<string>('all');
     const [loading, setLoading] = useState(true);
 
     const togglePackage = (index: number) => {
@@ -41,6 +43,13 @@ export default function CoursesPage() {
                     setPackages(dbPackages);
                 } else {
                     setPackages(t.courses.packages);
+                }
+
+                // Kategorileri çek
+                const catRes = await fetch('/api/admin/package-categories');
+                if (catRes.ok) {
+                    const dbCategories = await catRes.json();
+                    setCategories(dbCategories);
                 }
 
                 // Kurs tarihlerini çek
@@ -86,6 +95,35 @@ export default function CoursesPage() {
                     </p>
                 </header>
 
+                {/* Tabs */}
+                {categories.length > 0 && (
+                    <div className="flex flex-wrap justify-center items-center gap-2 md:gap-4 mb-12">
+                        <button
+                            onClick={() => setSelectedTab('all')}
+                            className={`px-6 py-2 border text-xs md:text-sm font-bold uppercase tracking-widest transition-all
+                                ${selectedTab === 'all'
+                                    ? 'border-primary bg-primary/10 text-primary'
+                                    : 'border-white/10 text-muted-foreground hover:border-white/30 hover:text-white'
+                                }`}
+                        >
+                            {t.courses.all_packages || "ALLE PAKETE"}
+                        </button>
+                        {categories.map(cat => (
+                            <button
+                                key={cat.id}
+                                onClick={() => setSelectedTab(cat.id)}
+                                className={`px-6 py-2 border text-xs md:text-sm font-bold uppercase tracking-widest transition-all
+                                    ${selectedTab === cat.id
+                                        ? 'border-primary bg-primary/10 text-primary'
+                                        : 'border-white/10 text-muted-foreground hover:border-white/30 hover:text-white'
+                                    }`}
+                            >
+                                {cat.name}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
                 <div className="flex flex-wrap justify-center gap-6 md:gap-8 mb-24">
                     {loading ? (
                         <div className="w-full text-center py-20">
@@ -98,7 +136,18 @@ export default function CoursesPage() {
                                 {t.courses.no_packages || "Derzeit sind keine Kurspakete verfügbar."}
                             </p>
                         </div>
-                    ) : packages.map((pkg: any, index: number) => {
+                    ) : packages.filter(pkg => {
+                        if (selectedTab === 'all') return true;
+                        if (pkg.categoryIds) {
+                            try {
+                                const ids = JSON.parse(pkg.categoryIds);
+                                if (Array.isArray(ids) && ids.includes(selectedTab)) {
+                                    return true;
+                                }
+                            } catch (e) {}
+                        }
+                        return pkg.categoryId === selectedTab;
+                    }).map((pkg: any, index: number) => {
                         const isExpanded = expandedIndices.includes(index);
                         const info = courseInfo[pkg.title.trim().toUpperCase()];
                         const isToday = info?.rawDate ? dayjs(info.rawDate).isSame(dayjs(), 'day') : false;
@@ -206,19 +255,19 @@ export default function CoursesPage() {
                 {/* Externe Gebühren Notu */}
                 <div className="w-full max-w-7xl mx-auto mb-16 p-6 md:px-12 md:py-8 bg-primary/[0.02] border border-primary/10 rounded-2xl backdrop-blur-sm text-center shadow-[0_0_30px_rgba(0,0,0,0.5)]">
                     <h3 className="text-primary text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] mb-4">
-                        Externe Gebühren
+                        {t.courses.external_fees || "Externe Gebühren"}
                         <span className="text-muted-foreground/60 normal-case tracking-normal font-normal ml-2 font-serif italic block md:inline mt-1 md:mt-0">
-                            (nicht im Kurspreis enthalten)
+                            {t.courses.not_included || "(nicht im Kurspreis enthalten)"}
                         </span>
                     </h3>
                     <div className="flex flex-col md:flex-row flex-wrap justify-center items-center gap-x-3 lg:gap-x-6 gap-y-3 text-muted-foreground/80 text-xs md:text-[13px] lg:text-sm">
-                        <span className="whitespace-nowrap flex items-center gap-2">Ärztliche Untersuchung <strong className="text-foreground font-medium ml-1">ca. 35–50 €</strong></span>
+                        <span className="whitespace-nowrap flex items-center gap-2">{t.courses.medical_check || "Ärztliche Untersuchung"} <strong className="text-foreground font-medium ml-1">{t.courses.approx || "ca."} 35–50 €</strong></span>
                         <div className="w-1 h-1 rounded-full bg-primary/40 hidden md:block"></div>
-                        <span className="whitespace-nowrap flex items-center gap-2">Erste-Hilfe-Kurs <strong className="text-foreground font-medium ml-1">ca. 70–90 €</strong></span>
+                        <span className="whitespace-nowrap flex items-center gap-2">{t.courses.first_aid || "Erste-Hilfe-Kurs"} <strong className="text-foreground font-medium ml-1">{t.courses.approx || "ca."} 70–90 €</strong></span>
                         <div className="w-1 h-1 rounded-full bg-primary/40 hidden md:block"></div>
-                        <span className="whitespace-nowrap flex items-center gap-2">Führerscheingebühr (Verkehrsamt) <strong className="text-foreground font-medium ml-1">ca. 90 €</strong></span>
+                        <span className="whitespace-nowrap flex items-center gap-2">{t.courses.license_fee || "Führerscheingebühr (Verkehrsamt)"} <strong className="text-foreground font-medium ml-1">{t.courses.approx || "ca."} 90 €</strong></span>
                         <div className="w-1 h-1 rounded-full bg-primary/40 hidden md:block"></div>
-                        <span className="whitespace-nowrap flex items-center gap-2">Scheckkartengebühr <strong className="text-foreground font-medium ml-1">ca. 70–75 €</strong></span>
+                        <span className="whitespace-nowrap flex items-center gap-2">{t.courses.card_fee || "Scheckkartengebühr"} <strong className="text-foreground font-medium ml-1">{t.courses.approx || "ca."} 70–75 €</strong></span>
                     </div>
                 </div>
 

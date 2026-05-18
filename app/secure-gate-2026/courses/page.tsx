@@ -6,19 +6,13 @@ export const dynamic = 'force-dynamic';
 // Kurs paketlerini getiren ana admin sayfası
 async function getCoursePackages() {
     try {
-        // Raw query kullanıyoruz çünkü Prisma Client eski şemada kalmış olabilir
-        const packages = await prisma.$queryRaw`
-            SELECT * FROM "CoursePackage" 
+        const packages = await prisma.$queryRawUnsafe(`
+            SELECT id, title, tag, price, "courseType", features, "titleDe", "tagDe", "featuresDe", "isVisible", "showDate", "showPrice", "order", "categoryId", "categoryIds"
+            FROM "CoursePackage"
             ORDER BY "order" ASC, "createdAt" DESC
-        ` as any[];
+        `) as any[];
 
-        // Boolean alanları SQLite'dan doğru bir şekilde çevirelim
-        return packages.map(pkg => ({
-            ...pkg,
-            showDate: pkg.showDate === 1 || pkg.showDate === true || pkg.showDate === '1' || pkg.showDate === null,
-            // showPrice ekledim
-            showPrice: pkg.showPrice === 1 || pkg.showPrice === true || pkg.showPrice === '1' || pkg.showPrice === null
-        }));
+        return packages;
     } catch (error) {
         console.error('Course Packages Fetch Error:', error);
         return [];

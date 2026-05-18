@@ -69,7 +69,7 @@ export function FloatingSocials() {
     return (
         <>
             {/* Masaüstü Görünümü: Soldaki Dikey Araç Çubuğu */}
-            <div key={`desktop-${pathname}`} className="fixed left-6 top-1/2 -translate-y-1/2 z-[100] hidden xl:flex flex-col gap-4">
+            <div suppressHydrationWarning key={`desktop-${pathname}`} className="fixed left-6 top-1/2 -translate-y-1/2 z-[100] hidden xl:flex flex-col gap-4">
                 {socialLinks.map((item, index) => (
                     <motion.a
                         key={item.id}
@@ -105,7 +105,7 @@ export function FloatingSocials() {
             </div>
 
             {/* Mobil Görünüm: Tam Genişlikte Alt Navigasyon Çubuğu */}
-            <div key={`mobile-${pathname}`} className="fixed bottom-0 left-0 right-0 z-[100] xl:hidden flex items-center justify-around p-3 pb-6 bg-background/90 backdrop-blur-2xl border-t border-white/5 rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.3)] animate-in slide-in-from-bottom-full duration-700">
+            <div suppressHydrationWarning key={`mobile-${pathname}`} className="fixed bottom-0 left-0 right-0 z-[100] xl:hidden flex items-center justify-around p-3 pb-6 bg-background/90 backdrop-blur-2xl border-t border-white/5 rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.3)] animate-in slide-in-from-bottom-full duration-700">
                 {socialLinks.map((item, index) => (
                     <motion.a
                         key={item.id}

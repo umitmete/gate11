@@ -135,12 +135,30 @@ model CoursePackage {
   showPrice   Boolean  @default(true) // Fiyat alanını göster/gizle
   order       Int      @default(0)
   
+  // Kategori İlişkisi (tekil – geriye dönük uyumluluk)
+  categoryId  String?
+  category    PackageCategory? @relation(fields: [categoryId], references: [id])
+  
+  // Çoklu Kategori (JSON array – "all" filtresi için)
+  categoryIds String?  @default("[]") // JSON: ["catId1","catId2"]
+  
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
   @@index([courseType])
   @@index([isVisible])
   @@index([order])
+  @@index([categoryId])
+}
+
+model PackageCategory {
+  id        String   @id @default(cuid())
+  name      String   // Örn: "A-PAKETE", "B-PAKETE"
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  packages  CoursePackage[]
 }
 
 model Instructor {

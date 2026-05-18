@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, Home, FileText, GraduationCap, Calendar, Users, LogOut } from 'lucide-react';
+import { Menu, X, Home, FileText, GraduationCap, Calendar, Users, LogOut, Package } from 'lucide-react';
 import LogoutButton from './LogoutButton';
 import HealthIndicator from '@/components/admin/HealthIndicator';
 import { usePathname } from 'next/navigation';

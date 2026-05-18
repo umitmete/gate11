@@ -28,7 +28,49 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="de" suppressHydrationWarning>
-      <body className={`${inter.variable} ${playfair.variable} antialiased bg-background text-foreground transition-all duration-300 xl:pl-20`}>
+      <body suppressHydrationWarning className={`${inter.variable} ${playfair.variable} antialiased bg-background text-foreground transition-all duration-300 xl:pl-20`}>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                if (typeof window === 'undefined') return;
+                const attributesToRemove = ['bis_skin_checked', 'bis_register'];
+                const cleanElements = () => {
+                  attributesToRemove.forEach(attr => {
+                    document.querySelectorAll('[' + attr + ']').forEach(el => el.removeAttribute(attr));
+                  });
+                };
+                const observer = new MutationObserver((mutations) => {
+                  mutations.forEach((mutation) => {
+                    if (mutation.type === 'attributes' && attributesToRemove.includes(mutation.attributeName)) {
+                      if (mutation.target && mutation.target.removeAttribute) {
+                        mutation.target.removeAttribute(mutation.attributeName);
+                      }
+                    } else if (mutation.addedNodes) {
+                      mutation.addedNodes.forEach(node => {
+                        if (node.nodeType === 1) {
+                          attributesToRemove.forEach(attr => {
+                            if (node.hasAttribute && node.hasAttribute(attr)) node.removeAttribute(attr);
+                            node.querySelectorAll('[' + attr + ']').forEach(el => el.removeAttribute(attr));
+                          });
+                        }
+                      });
+                    }
+                  });
+                });
+                if (document.documentElement) {
+                  observer.observe(document.documentElement, {
+                    attributes: true,
+                    subtree: true,
+                    childList: true
+                  });
+                }
+                window.addEventListener('DOMContentLoaded', cleanElements);
+                window.addEventListener('load', cleanElements);
+              })();
+            `
+          }}
+        />
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

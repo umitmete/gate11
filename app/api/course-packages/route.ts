@@ -10,13 +10,12 @@ export async function GET(request: Request) {
         const courseType = searchParams.get('type') || 'DAY';
         const lang = searchParams.get('lang') || 'de';
 
-        // RAW QUERY kullanıyoruz çünkü Prisma Client generate edilemedi (Dosya kilitli).
-        // SQLite'da boolean değerler 1 ve 0 olarak tutulur.
-        const packages = await prisma.$queryRaw`
-            SELECT * FROM "CoursePackage" 
-            WHERE "courseType" = ${courseType} AND "isVisible" = true
+        const packages = await prisma.$queryRawUnsafe(`
+            SELECT id, title, tag, price, "courseType", features, "titleDe", "tagDe", "featuresDe", "isVisible", "showDate", "showPrice", "order", "categoryId", "categoryIds"
+            FROM "CoursePackage"
+            WHERE "isVisible" = true
             ORDER BY "order" ASC, "createdAt" DESC
-        ` as any[];
+        `) as any[];
 
         // Dil bazında formatlama ve Otomatik Çeviri
         const formattedPackages = await Promise.all(packages.map(async (pkg: any) => {
@@ -74,7 +73,9 @@ export async function GET(request: Request) {
                 price: showPrice ? pkg.price : null,
                 features,
                 showDate: showDate,
-                showPrice: showPrice
+                showPrice: showPrice,
+                categoryId: pkg.categoryId,
+                categoryIds: pkg.categoryIds || pkg.category_ids || '[]'
             };
         }));
 

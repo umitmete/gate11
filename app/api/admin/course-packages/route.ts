@@ -103,14 +103,24 @@ export async function POST(request: Request) {
                 featuresFa,
 
                 isVisible: data.isVisible ?? true,
-                order: data.order || 0,
+                order: data.order || 0
             }
         });
 
+        // Use raw SQL to update the new fields to bypass Next.js old Prisma client memory
+        if (data.categoryId || data.categoryIds) {
+            await prisma.$executeRawUnsafe(
+                `UPDATE "CoursePackage" SET "categoryId" = $1, "categoryIds" = $2 WHERE "id" = $3`,
+                data.categoryId || null,
+                data.categoryIds || '[]',
+                newPackage.id
+            );
+        }
+
         return NextResponse.json(newPackage, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Course Package POST Error:', error);
-        return NextResponse.json({ error: 'Failed to create package' }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to create package', details: error?.message || String(error), stack: error?.stack }, { status: 500 });
     }
 }
 

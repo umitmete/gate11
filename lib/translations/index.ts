@@ -58,6 +58,14 @@ export const translations = {
             next_course: 'Nächster Kurs',
             soon: 'Bald verfügbar',
             no_packages: 'Derzeit sind keine Kurspakete verfügbar.',
+            all_packages: 'ALLE PAKETE',
+            external_fees: 'Externe Gebühren',
+            not_included: '(nicht im Kurspreis enthalten)',
+            medical_check: 'Ärztliche Untersuchung',
+            first_aid: 'Erste-Hilfe-Kurs',
+            license_fee: 'Führerscheingebühr (Verkehrsamt)',
+            card_fee: 'Scheckkartengebühr',
+            approx: 'ca.',
             packages: [
                 {
                     title: 'B-PAKET',
@@ -282,12 +290,12 @@ export const translations = {
             subtitle: 'Meistere die Straße in Fahrzeugen, die technische Exzellenz definieren.',
             cta: 'VORANMELDUNG',
             reveal: {
-                title: 'DAS BIEST',
-                model: 'BMW M2 CS 2025',
-                badge: 'Österreich Premiere',
-                subtitle: 'Der Erste und Einzige.',
-                description: 'Exklusiv bei GATE 11. Erleben Sie die rohe Kraft von 530 PS in seiner elegantesten Form. Ein Statement in Schwarz.',
-                features: ['530 PS', '3.5s 0-100', 'M Race Track']
+                title: 'PREMIUM FLOTTE',
+                model: 'FAHREN OHNE KOMPROMISSE',
+                badge: 'ÖSTERREICHS EINZIGER PREMIUM-FUHRPARK',
+                subtitle: 'Exklusive Fahrzeuge.',
+                description: 'BMW, Kawasaki und modernste Fahrzeuge für ein Fahrerlebnis auf höchstem Niveau.',
+                features: ['100% PREMIUM', '3 KLASSEN', 'NEUESTE MODELLE']
             }
         },
         plans: {
@@ -764,6 +772,14 @@ export const translations = {
             next_course: 'Next Course',
             soon: 'Coming Soon',
             no_packages: 'Currently no course packages available.',
+            all_packages: 'ALL PACKAGES',
+            external_fees: 'External Fees',
+            not_included: '(not included in course price)',
+            medical_check: 'Medical examination',
+            first_aid: 'First aid course',
+            license_fee: 'Driver\'s license fee (traffic office)',
+            card_fee: 'Credit card fee',
+            approx: 'approx.',
             packages: [
                 {
                     title: 'B-PAKET',
@@ -887,12 +903,12 @@ export const translations = {
             subtitle: 'Master the road in vehicles that define engineering excellence.',
             cta: 'PRE-REGISTRATION',
             reveal: {
-                title: 'THE BEAST',
-                model: 'BMW M2 CS 2025',
-                badge: 'Austria Premiere',
-                subtitle: 'The First and Only.',
-                description: 'Exclusive to GATE 11. Experience the raw power of 460 HP in its most elegant form. A statement in Black.',
-                features: ['460 HP', '3.8s 0-100', 'M Driver\'s Package']
+                title: 'PREMIUM FLEET',
+                model: 'DRIVING WITHOUT COMPROMISE',
+                badge: 'AUSTRIA\'S ONLY PREMIUM FLEET',
+                subtitle: 'Exclusive vehicles.',
+                description: 'BMW, Kawasaki and state-of-the-art vehicles for a driving experience at the highest level.',
+                features: ['100% PREMIUM', '3 CLASSES', 'LATEST MODELS']
             }
         },
         plans: {
@@ -1269,6 +1285,14 @@ export const translations = {
             next_course: 'Sıradaki Kurs',
             soon: 'Yakında',
             no_packages: 'Şu anda görüntülenecek kurs paketi bulunmamaktadır.',
+            all_packages: 'TÜM PAKETLER',
+            external_fees: 'Harici Ücretler',
+            not_included: '(kurs ücretine dahil değildir)',
+            medical_check: 'Sağlık Raporu (Doktor Muayenesi)',
+            first_aid: 'İlk Yardım Kursu',
+            license_fee: 'Ehliyet Harcı (Trafik Dairesi)',
+            card_fee: 'Ehliyet Kart Ücreti',
+            approx: 'yakl.',
             packages: [
                 {
                     title: 'B-PAKET',
@@ -1494,12 +1518,12 @@ export const translations = {
             subtitle: 'Mühendislik mükemmelliğini tanımlayan araçlarla yollara hakim olun.',
             cta: 'ÖN KAYIT',
             reveal: {
-                title: 'CANAVAR',
-                model: 'BMW M2 CS 2025',
-                badge: 'Avusturya Prömiyeri',
-                subtitle: 'İlk ve Tek.',
-                description: 'Sadece GATE 11\'de. 530 beygir gücünün ham gücünü en zarif formunda deneyimleyin. Siyahtan bir manifesto.',
-                features: ['530 HP', '3.5sn 0-100', 'M Yarış Paketi']
+                title: 'PREMIUM FİLO',
+                model: 'TAVİZSİZ SÜRÜŞ KEYFİ',
+                badge: 'AVUSTURYA\'NIN TEK PREMIUM FİLOSU',
+                subtitle: 'Ayrıcalıklı araçlar.',
+                description: 'En üst düzey sürüş deneyimi için BMW, Kawasaki ve en modern araçlar.',
+                features: ['100% PREMIUM', '3 EHLİYET-SINIFI', 'EN YENİLER']
             }
         },
         plans: {
@@ -1873,6 +1897,15 @@ export const translations = {
             cta: 'سجل الآن',
             next_course: 'الدورة القادمة',
             soon: 'قريباً',
+            no_packages: 'لا توجد حزم دورات متاحة حاليًا.',
+            all_packages: 'جميع الحزم',
+            external_fees: 'الرسوم الخارجية',
+            not_included: '(غير مشمولة في سعر الدورة)',
+            medical_check: 'الفحص الطبي',
+            first_aid: 'دورة الإسعافات الأولية',
+            license_fee: 'رسوم رخصة القيادة (مكتب المرور)',
+            card_fee: 'رسوم بطاقة الرخصة',
+            approx: 'حوالي',
             packages: [
                 {
                     title: 'B-PAKET',
@@ -2097,12 +2130,12 @@ export const translations = {
             subtitle: 'أتقن الطريق بمركبات تحدد التميز الهندسي.',
             cta: 'التسجيل المسبق',
             reveal: {
-                title: 'الوحش',
-                model: 'BMW M2 CS 2025',
-                badge: 'العرض الأول في النمسا',
-                subtitle: 'الأول والوحيد.',
-                description: 'حصرياً لدى GATE 11. اختبر القوة الخام لـ 530 حصاناً بأكثر أشكالها أناقة. بيان باللون الأسود.',
-                features: ['530 حصان', '3.5 ثانية 0-100', 'حزمة سباق M']
+                title: 'أسطول بريميوم',
+                model: 'قيادة بلا مساومة',
+                badge: 'أسطول بريميوم الوحيد في النمسا',
+                subtitle: 'مركبات حصرية.',
+                description: 'مركبات بي إم دبليو وكاواساكي وأحدث السيارات لتجربة قيادة على أعلى مستوى.',
+                features: ['100% بريميوم', '3 فئات', 'أحدث الموديلات']
             }
         },
         plans: {
@@ -2476,6 +2509,15 @@ export const translations = {
             cta: 'اکنون ثبت‌نام کنید',
             next_course: 'دوره بعدی',
             soon: 'به زودی',
+            no_packages: 'در حال حاضر هیچ بسته دوره‌ای در دسترس نیست.',
+            all_packages: 'همه بسته‌ها',
+            external_fees: 'هزینه‌های خارجی',
+            not_included: '(شامل هزینه دوره نمی‌شود)',
+            medical_check: 'معاینات پزشکی',
+            first_aid: 'دوره کمک‌های اولیه',
+            license_fee: 'هزینه گواهینامه رانندگی (اداره راهنمایی و رانندگی)',
+            card_fee: 'هزینه کارت گواهینامه',
+            approx: 'حدود',
             packages: [
                 {
                     title: 'B-PAKET',
@@ -2700,12 +2742,12 @@ export const translations = {
             subtitle: 'با وسایل نقلیه‌ای که برتری مهندسی را تعریف می‌کنند، بر جاده مسلط شوید.',
             cta: 'پیش‌ثبت‌نام',
             reveal: {
-                title: 'هیولا',
-                model: 'BMW M2 CS 2025',
-                badge: 'اولین نمایش در اتریش',
-                subtitle: 'اولین و تنها.',
-                description: 'منحصراً در GATE 11. قدرت خام ۵۳۰ اسب بخار را در ظریف‌ترین شکل آن تجربه کنید. بیانیه‌ای به رنگ سیاه.',
-                features: ['۵۳۰ اسب بخار', '۳.۵ ثانیه ۰-۱۰۰', 'پکیج مسابقه M']
+                title: 'ناوگان پریمیوم',
+                model: 'رانندگی بدون سازش',
+                badge: 'تنها ناوگان پریمیوم اتریش',
+                subtitle: 'وسایل نقلیه انحصاری.',
+                description: 'خودروهای بی‌ام‌و، کاوازاکی و مدرن‌ترین وسایل نقلیه برای تجربه رانندگی در بالاترین سطح.',
+                features: ['100% پریمیوم', '3 کلاس', 'جدیدترین مدل‌ها']
             }
         },
         plans: {

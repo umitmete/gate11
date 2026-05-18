@@ -13,6 +13,7 @@ export default function Home() {
   const { t } = useLanguage();
   const { theme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const videoProgress = useMotionValue(0);
@@ -24,7 +25,15 @@ export default function Home() {
   const textScale = useTransform(smoothProgress, [0.5, 0.85], [0.97, 1]);
   const overlayOpacity = useTransform(smoothProgress, [0.7, 0.95], [0, 1]);
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const currentTheme = theme === 'system' ? resolvedTheme : theme;
   const logoSrc = mounted && currentTheme === 'light'
@@ -58,6 +67,14 @@ export default function Home() {
           }
 
           videoProgress.set(maxProgress);
+
+          // Video sonuna doğru sinematik yavaşlatma (80% ile 98% ilerleme arasında hızı 1.0'dan 0.25'e düşürür)
+          if (progress > 0.80) {
+            const t = Math.min((progress - 0.80) / 0.18, 1);
+            video.playbackRate = 1.0 - t * 0.75;
+          } else {
+            video.playbackRate = 1.0;
+          }
         }
       }
       animationFrameId = requestAnimationFrame(animate);
@@ -68,23 +85,32 @@ export default function Home() {
     return () => {
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
-  }, [videoProgress]);
+  }, [videoProgress, isMobile]);
 
   return (
-    <main className="min-h-screen bg-background text-foreground overflow-x-hidden selection:bg-primary/30 selection:text-white">
+    <main suppressHydrationWarning className="min-h-screen bg-background text-foreground overflow-x-hidden selection:bg-primary/30 selection:text-white">
       <Navbar />
 
       {/* Giriş Bölümü (Hero) */}
       <section className="relative min-h-[calc(100vh-80px)] flex items-start pt-[15vh] md:items-center md:pt-0 justify-center overflow-hidden bg-background mt-20">
         <div className="absolute inset-0 z-0">
+          {/* Desktop Video */}
           <video
-            ref={videoRef}
-            src="/images/hero/BMW_M2_CS_2025.mp4"
-            className="w-full h-full object-cover"
+            ref={!isMobile ? videoRef : null}
+            src="/images/hero/hero.mp4"
+            className="hidden md:block w-full h-full object-cover"
             autoPlay
             muted
             playsInline
-          // No loop, stops at end for "soft cut" feel with slowdown
+          />
+          {/* Mobile Video */}
+          <video
+            ref={isMobile ? videoRef : null}
+            src="/images/hero/mobil%20hero.mp4"
+            className="block md:hidden w-full h-full object-cover"
+            autoPlay
+            muted
+            playsInline
           />
           {/* Metin okunabilirliği için koyu katman */}
           <div className="absolute inset-0 bg-black/40" />

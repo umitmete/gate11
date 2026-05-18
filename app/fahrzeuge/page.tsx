@@ -41,7 +41,7 @@ export default function VehiclesPage() {
     const vehicles = vehicles_data[language] || vehicles_data.de;
 
     return (
-        <main className="min-h-screen bg-background text-foreground pt-20 transition-colors duration-300">
+        <main suppressHydrationWarning className="min-h-screen bg-background text-foreground pt-20 transition-colors duration-300">
             <Navbar />
 
             {/* Özel Tanıtım Bölümü: BMW M2 CS - Sayfanın En Üstünde */}
@@ -57,8 +57,8 @@ export default function VehiclesPage() {
                         className="w-full h-full"
                     >
                         <img
-                            src="/images/bmw-hero.jpg"
-                            alt="BMW M2 CS 2025"
+                            src="/images/fahrzeuge_hero_resim.png"
+                            alt="GATE 11 Premium Flotte"
                             className="w-full h-full object-cover object-center"
                         />
                     </motion.div>
@@ -84,11 +84,7 @@ export default function VehiclesPage() {
                                         transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
                                         className="absolute inset-y-0 w-20 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12"
                                     />
-                                    {language === 'tr' ? 'AVUSTURYA\'DA İLK VE TEK' :
-                                        language === 'en' ? 'AUSTRIA\'S FIRST & ONLY' :
-                                            language === 'ar' ? 'الأول والوحيد في النمسا' :
-                                                language === 'fa' ? 'اولین و تنها در اتریش' :
-                                                    'ÖSTERREICHS ERSTER & EINZIGER'}
+                                    {t.vehicles.reveal.badge}
                                 </span>
                             </motion.div>
                             <p className="text-2xl md:text-6xl font-serif italic text-primary font-bold ml-1 md:ml-2 drop-shadow-[0_0_15px_rgba(229,4,18,0.4)]">
