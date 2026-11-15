@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import { FloatingSocials } from "@/components/layout/FloatingSocials";
+import { DataPrefetcher } from "@/components/providers/DataPrefetcher";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -78,6 +79,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <LanguageProvider>
+            <DataPrefetcher />
             <FloatingSocials />
             {children}
           </LanguageProvider>

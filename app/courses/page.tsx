@@ -5,10 +5,12 @@ import Link from 'next/link';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { LuxuryCard, CardTitle } from '@/components/ui/card/LuxuryCard';
-import { Check, Calendar, ChevronDown } from 'lucide-react';
+import { Check, Calendar, ChevronDown, Scale } from 'lucide-react';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 import { motion, AnimatePresence } from 'framer-motion';
 import dayjs from '@/lib/dayjs';
+import { EinzelpreiseModal } from '@/components/courses/EinzelpreiseModal';
+import { fetchWithCache, getCachedData } from '@/lib/client-cache';
 
 export default function CoursesPage() {
     const { t, language } = useLanguage();
@@ -18,6 +20,7 @@ export default function CoursesPage() {
     const [categories, setCategories] = useState<{ id: string, name: string }[]>([]);
     const [selectedTab, setSelectedTab] = useState<string>('all');
     const [loading, setLoading] = useState(true);
+    const [isEinzelpreiseOpen, setIsEinzelpreiseOpen] = useState(false);
 
     const togglePackage = (index: number) => {
         setExpandedIndices(prev =>
@@ -28,34 +31,63 @@ export default function CoursesPage() {
     };
 
     useEffect(() => {
+        let isMounted = true;
         const fetchData = async () => {
-            try {
-                // Kurs paketlerini çek - Cache busting ile
-                const packagesRes = await fetch(`/api/course-packages?type=DAY&lang=${language}&t=${Date.now()}`, {
-                    cache: 'no-store',
-                    headers: {
-                        'Pragma': 'no-cache',
-                        'Cache-Control': 'no-cache'
+            const pkgUrl = `/api/course-packages?type=DAY&lang=${language}`;
+            const catUrl = '/api/admin/package-categories';
+            const plansUrl = '/api/plans?type=DAY';
+
+            // 1. Instant Cache Check: If pre-fetched, render immediately with 0ms wait
+            const cachedPkgs = getCachedData<any[]>(pkgUrl);
+            const cachedCats = getCachedData<any[]>(catUrl);
+            const cachedPlans = getCachedData<any[]>(plansUrl);
+
+            if (cachedPkgs && isMounted && Array.isArray(cachedPkgs)) {
+                setPackages(cachedPkgs);
+                setLoading(false);
+            }
+            if (cachedCats && isMounted && Array.isArray(cachedCats)) {
+                setCategories(cachedCats);
+            }
+            if (cachedPlans && isMounted && Array.isArray(cachedPlans)) {
+                const infoMap: Record<string, { date: string, rawDate: string, note?: string }> = {};
+                cachedPlans.forEach((plan: any) => {
+                    const cleanTitle = plan.title.replace(/\s*\(Abend\)\s*/gi, '').trim();
+                    const key = cleanTitle.toUpperCase();
+                    if (!infoMap[key]) {
+                        const start = dayjs(plan.startDate).format('DD.MM.YYYY');
+                        const end = dayjs(plan.endDate).format('DD.MM.YYYY');
+                        infoMap[key] = {
+                            date: `${start} – ${end}`,
+                            rawDate: plan.startDate,
+                            note: plan.description
+                        };
                     }
                 });
-                if (packagesRes.ok) {
-                    const dbPackages = await packagesRes.json();
+                setCourseInfo(infoMap);
+            }
+
+            // 2. Network/Revalidation
+            try {
+                const [dbPackages, dbCategories, plans] = await Promise.all([
+                    fetchWithCache<any[]>(pkgUrl).catch(() => t.courses.packages),
+                    fetchWithCache<any[]>(catUrl).catch(() => []),
+                    fetchWithCache<any[]>(plansUrl).catch(() => [])
+                ]);
+
+                if (!isMounted) return;
+
+                if (Array.isArray(dbPackages)) {
                     setPackages(dbPackages);
                 } else {
                     setPackages(t.courses.packages);
                 }
 
-                // Kategorileri çek
-                const catRes = await fetch('/api/admin/package-categories');
-                if (catRes.ok) {
-                    const dbCategories = await catRes.json();
+                if (Array.isArray(dbCategories)) {
                     setCategories(dbCategories);
                 }
 
-                // Kurs tarihlerini çek
-                const plansRes = await fetch('/api/plans?type=DAY');
-                if (plansRes.ok) {
-                    const plans = await plansRes.json();
+                if (Array.isArray(plans)) {
                     const infoMap: Record<string, { date: string, rawDate: string, note?: string }> = {};
                     plans.forEach((plan: any) => {
                         const cleanTitle = plan.title.replace(/\s*\(Abend\)\s*/gi, '').trim();
@@ -74,12 +106,14 @@ export default function CoursesPage() {
                 }
             } catch (err) {
                 console.error("Veri alınamadı", err);
-                setPackages(t.courses.packages);
+                if (isMounted) setPackages(t.courses.packages);
             } finally {
-                setLoading(false);
+                if (isMounted) setLoading(false);
             }
         };
+
         fetchData();
+        return () => { isMounted = false; };
     }, [language, t.courses.packages]);
 
     return (
@@ -93,6 +127,31 @@ export default function CoursesPage() {
                     <p className="text-base md:text-xl text-muted-foreground font-light leading-relaxed">
                         {t.courses.subtitle}
                     </p>
+
+                    {/* Gesetzliche Preisauszeichnung / Einzelpreise Link */}
+                    <div className="pt-1 md:pt-2">
+                        <button
+                            type="button"
+                            onClick={() => setIsEinzelpreiseOpen(true)}
+                            className="inline-flex items-center gap-2 text-xs md:text-sm font-medium text-primary hover:text-foreground transition-all py-1.5 px-4 rounded-full bg-primary/10 hover:bg-primary/20 border border-primary/25 hover:border-primary/50 shadow-[0_0_15px_rgba(212,175,55,0.08)] group cursor-pointer"
+                        >
+                            <Scale className="w-3.5 h-3.5 text-primary group-hover:scale-110 transition-transform" />
+                            <span className="underline underline-offset-4 decoration-primary/40 group-hover:decoration-primary font-medium">
+                                {language === 'tr' ? 'Tekil Fiyatlar & Ek Ücretler Tarifesi' :
+                                 language === 'en' ? 'Overview of Individual Prices & Additional Fees' :
+                                 language === 'ar' ? 'عرض الأسعار الفردية والرسوم الإضافية' :
+                                 language === 'fa' ? 'مشاهده قیمت‌های تکی و هزینه‌های جانبی' :
+                                 'Einzelpreise & Zusatzgebühren einsehen'}
+                            </span>
+                            <span className="text-[10px] md:text-xs text-muted-foreground/80 font-normal">
+                                {language === 'tr' ? '(Yasal Fiyat Bildirimi - § 111 KFG)' :
+                                 language === 'en' ? '(Statutory Price Specification - § 111 KFG)' :
+                                 language === 'ar' ? '(بيان الأسعار القانوني - § 111 KFG)' :
+                                 language === 'fa' ? '(تعرفه قانونی - § 111 KFG)' :
+                                 '(Gesetzliche Preisauszeichnung gem. § 111 KFG)'}
+                            </span>
+                        </button>
+                    </div>
                 </header>
 
                 {/* Tabs */}
@@ -280,6 +339,13 @@ export default function CoursesPage() {
                     </Link>
                 </div>
             </div>
+
+            <EinzelpreiseModal
+                isOpen={isEinzelpreiseOpen}
+                onClose={() => setIsEinzelpreiseOpen(false)}
+                language={language}
+            />
+
             <Footer />
         </main>
     );

@@ -48,4 +48,6 @@ next-env.d.ts
 /uploads
 /public/uploads
 *.db
-*.db-journal
+database-backup.json
+*.db
+database-backup.json-journal

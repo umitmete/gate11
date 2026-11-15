@@ -10,6 +10,7 @@ import 'dayjs/locale/de';
 import 'dayjs/locale/tr';
 import 'dayjs/locale/ar';
 import 'dayjs/locale/fa';
+import { fetchWithCache, getCachedData } from '@/lib/client-cache';
 
 interface CourseSchedule {
     id: string;
@@ -27,19 +28,32 @@ export default function KursterminePage() {
     const [activeTab, setActiveTab] = useState<'INTENSIVE' | 'EVENING'>('INTENSIVE');
 
     useEffect(() => {
+        let isMounted = true;
+        const schedUrl = `/api/course-schedules?lang=${language}`;
+
+        // Instant Cache Hit Check: 0ms wait
+        const cached = getCachedData<CourseSchedule[]>(schedUrl);
+        if (cached && Array.isArray(cached) && isMounted) {
+            setSchedules(cached);
+            setLoading(false);
+        }
+
         const fetchSchedules = async () => {
             try {
-                const response = await fetch(`/api/course-schedules?lang=${language}`);
-                const data = await response.json();
-                setSchedules(data);
+                const data = await fetchWithCache<CourseSchedule[]>(schedUrl);
+                if (isMounted) {
+                    setSchedules(Array.isArray(data) ? data : []);
+                }
             } catch (error) {
                 console.error('Failed to fetch schedules:', error);
+                if (isMounted) setSchedules([]);
             } finally {
-                setLoading(false);
+                if (isMounted) setLoading(false);
             }
         };
 
         fetchSchedules();
+        return () => { isMounted = false; };
     }, [language]);
 
     const intensiveCourses = schedules.filter(s => s.type === 'INTENSIVE');
