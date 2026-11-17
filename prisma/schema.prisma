@@ -210,3 +210,27 @@ model CourseSchedule {
   @@index([date])
   @@index([type])
 }
+
+// =========================================================
+// KAMPANYA & DUYURU POPUP SİSTEMİ
+// =========================================================
+
+model Campaign {
+  id          String   @id @default(cuid())
+  title       String
+  subtitle    String?
+  badge       String?
+  description String
+  imageUrl    String?
+  buttonText  String?
+  buttonLink  String?
+  isActive     Boolean  @default(false)
+  showEffects  Boolean  @default(true)
+  translations String?
+  startDate    DateTime?
+  endDate      DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([isActive])
+}

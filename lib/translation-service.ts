@@ -36,3 +36,34 @@ export async function translateArray(items: string[], targetLang: 'en' | 'tr' | 
     console.log(`Translating array of ${items.length} items to ${targetLang}...`);
     return Promise.all(items.map(item => translateText(item, targetLang)));
 }
+
+export interface CampaignLocalizedFields {
+    title: string;
+    subtitle: string;
+    badge: string;
+    description: string;
+}
+
+export async function translateCampaignFields(fields: {
+    title: string;
+    subtitle?: string | null;
+    badge?: string | null;
+    description: string;
+}): Promise<string> {
+    const targetLangs: Array<'en' | 'tr' | 'ar' | 'fa'> = ['en', 'tr', 'ar', 'fa'];
+    const result: Record<string, CampaignLocalizedFields> = {};
+
+    await Promise.all(
+        targetLangs.map(async (lang) => {
+            const [title, subtitle, badge, description] = await Promise.all([
+                translateText(fields.title || '', lang),
+                fields.subtitle ? translateText(fields.subtitle, lang) : Promise.resolve(''),
+                fields.badge ? translateText(fields.badge, lang) : Promise.resolve(''),
+                translateText(fields.description || '', lang),
+            ]);
+            result[lang] = { title, subtitle, badge, description };
+        })
+    );
+
+    return JSON.stringify(result);
+}

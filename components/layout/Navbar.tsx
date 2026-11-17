@@ -7,7 +7,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { LanguageSelector } from './LanguageSelector';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from 'next-themes';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { Menu, X, ChevronRight } from 'lucide-react';
 
 export function Navbar() {
@@ -16,11 +16,73 @@ export function Navbar() {
     const { theme, resolvedTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isCompact, setIsCompact] = useState(false);
+
+    const containerRef = useRef<HTMLDivElement>(null);
+    const logoRef = useRef<HTMLDivElement>(null);
+    const navLinksRef = useRef<HTMLDivElement>(null);
+    const rightControlsRef = useRef<HTMLDivElement>(null);
+
+    const checkCompact = useCallback(() => {
+        const container = containerRef.current;
+        const logo = logoRef.current;
+        const navLinksEl = navLinksRef.current;
+        const rightControls = rightControlsRef.current;
+        if (!container || !logo || !navLinksEl || !rightControls) return;
+
+        if (window.innerWidth < 1280) {
+            setIsCompact(true);
+            return;
+        }
+
+        const containerWidth = container.clientWidth;
+        const horizontalPadding = 24;
+        const halfNav = navLinksEl.scrollWidth / 2;
+        const rightWidth = rightControls.offsetWidth;
+        const logoWidth = logo.offsetWidth;
+        const minClearance = 28;
+
+        const availableRight = containerWidth / 2 - horizontalPadding - rightWidth;
+        const availableLeft = containerWidth / 2 - horizontalPadding - logoWidth;
+
+        const shouldCompact =
+            availableRight < halfNav + minClearance ||
+            availableLeft < halfNav + minClearance;
+
+        setIsCompact(shouldCompact);
+        if (!shouldCompact) {
+            setIsMenuOpen(false);
+        }
+    }, []);
 
     useEffect(() => {
         setMounted(true);
         setIsMenuOpen(false);
     }, [pathname]);
+
+    useEffect(() => {
+        if (!mounted) return;
+        const rafId = requestAnimationFrame(checkCompact);
+
+        const observer = typeof ResizeObserver !== 'undefined'
+            ? new ResizeObserver(() => {
+                checkCompact();
+            })
+            : null;
+
+        if (observer) {
+            if (containerRef.current) observer.observe(containerRef.current);
+            if (navLinksRef.current) observer.observe(navLinksRef.current);
+            if (rightControlsRef.current) observer.observe(rightControlsRef.current);
+        }
+
+        window.addEventListener('resize', checkCompact);
+        return () => {
+            cancelAnimationFrame(rafId);
+            observer?.disconnect();
+            window.removeEventListener('resize', checkCompact);
+        };
+    }, [mounted, checkCompact, t]);
 
     useEffect(() => {
         if (isMenuOpen) {
@@ -47,10 +109,11 @@ export function Navbar() {
     return (
         <>
             <nav className="fixed top-0 left-0 xl:left-20 right-0 z-[100] bg-background/80 backdrop-blur-xl border-b border-white/5 h-20">
-                <div className="container mx-auto px-6 h-full flex items-center relative">
+                <div ref={containerRef} className="container mx-auto px-6 h-full flex items-center relative">
                     {/* Logo bölümü - Sol */}
                     <div className="flex-1 flex items-center">
                         <motion.div
+                            ref={logoRef}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             transition={{ type: "spring", stiffness: 400, damping: 17 }}
@@ -64,13 +127,23 @@ export function Navbar() {
                                     }
                                 }}
                             >
-                                <img src={logoSrc} alt="GATE 11 Logo" className="h-12 w-auto object-contain transition-opacity duration-300" />
+                                <img src={logoSrc} alt="GATE 11 Logo" onLoad={checkCompact} className="h-12 w-auto object-contain transition-opacity duration-300" />
                             </Link>
                         </motion.div>
                     </div>
 
                     {/* Masaüstü link bölümü - Orta (mutlak ortalanmış) */}
-                    <div className="hidden lg:flex absolute left-1/2 -translate-x-1/2 items-center gap-4 xl:gap-6 text-[11px] xl:text-xs font-bold tracking-[0.15em] xl:tracking-[0.18em] uppercase whitespace-nowrap">
+                    <div
+                        ref={navLinksRef}
+                        aria-hidden={mounted && isCompact}
+                        className={`${
+                            mounted
+                                ? isCompact
+                                    ? 'hidden md:flex invisible pointer-events-none'
+                                    : 'flex'
+                                : 'hidden xl:flex'
+                        } absolute left-1/2 -translate-x-1/2 items-center gap-4 2xl:gap-6 text-[11px] 2xl:text-xs font-bold tracking-[0.15em] 2xl:tracking-[0.18em] uppercase whitespace-nowrap`}
+                    >
                         {navLinks.map((link) => {
                             const isActive = pathname === link.href;
 
@@ -101,25 +174,27 @@ export function Navbar() {
 
                     {/* İşlem bölümü - Sağ */}
                     <div className="flex-1 flex items-center justify-end gap-3 md:gap-4">
-                        <div className="hidden sm:flex items-center gap-4">
-                            <LanguageSelector />
-                            <ThemeToggle />
-                        </div>
+                        <div ref={rightControlsRef} className="flex items-center gap-3 md:gap-4 shrink-0">
+                            <div className="hidden sm:flex items-center gap-4">
+                                <LanguageSelector />
+                                <ThemeToggle />
+                            </div>
 
-                        <Link
-                            href="/anmeldung"
-                            className={`hidden md:flex px-8 py-2.5 font-black text-[10px] tracking-[0.2em] uppercase transition-all duration-300 shadow-lg ${pathname === '/anmeldung'
-                                ? 'bg-foreground text-background shadow-primary/40'
-                                : 'bg-primary text-primary-foreground hover:bg-white hover:text-black shadow-primary/20'
-                                }`}
-                        >
-                            {t.nav.register}
-                        </Link>
+                            <Link
+                                href="/anmeldung"
+                                className={`hidden md:flex px-8 py-2.5 font-black text-[10px] tracking-[0.2em] uppercase whitespace-nowrap transition-all duration-300 shadow-lg ${pathname === '/anmeldung'
+                                    ? 'bg-foreground text-background shadow-primary/40'
+                                    : 'bg-primary text-primary-foreground hover:bg-white hover:text-black shadow-primary/20'
+                                    }`}
+                            >
+                                {t.nav.register}
+                            </Link>
+                        </div>
 
                         {/* Mobil menü butonu */}
                         <button
                             onClick={() => setIsMenuOpen(true)}
-                            className="lg:hidden p-2 text-foreground/80 hover:text-primary transition-all active:scale-90"
+                            className={`${mounted ? (isCompact ? 'flex' : 'hidden') : 'flex xl:hidden'} p-2 text-foreground/80 hover:text-primary transition-all active:scale-90 shrink-0`}
                             aria-label="Menüyü Aç"
                         >
                             <Menu className="w-8 h-8" />
@@ -131,7 +206,7 @@ export function Navbar() {
             {/* Mobil menü katmanı */}
             <AnimatePresence>
                 {isMenuOpen && (
-                    <div className="fixed inset-0 z-[9999] lg:hidden">
+                    <div className="fixed inset-0 z-[9999]">
                         {/* Arka plan karartma */}
                         <motion.div
                             initial={{ opacity: 0 }}

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, Home, FileText, GraduationCap, Calendar, Users, LogOut, Package } from 'lucide-react';
+import { Menu, X, Home, FileText, GraduationCap, Calendar, Users, LogOut, Package, Megaphone } from 'lucide-react';
 import LogoutButton from './LogoutButton';
 import HealthIndicator from '@/components/admin/HealthIndicator';
 import { usePathname } from 'next/navigation';
@@ -23,6 +23,7 @@ export default function AdminLayoutClient({
         { href: '/secure-gate-2026/Schuelerlisten', label: 'Schülerlisten', icon: Users },
         { href: '/secure-gate-2026/courses', label: 'Fahrakademie', icon: GraduationCap },
         { href: '/secure-gate-2026/kurse', label: 'Kurse', icon: Calendar },
+        { href: '/secure-gate-2026/campaigns', label: 'Kampagnen', icon: Megaphone },
         { href: '/secure-gate-2026/Jahresplan', label: 'Jahresplan', icon: Calendar },
         { href: '/secure-gate-2026/Team', label: 'Team', icon: Users },
     ];
