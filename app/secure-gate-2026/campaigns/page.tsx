@@ -3,9 +3,15 @@
 import { useState, useEffect, useRef } from 'react';
 import {
     Megaphone, Plus, Edit2, Trash2, CheckCircle2, XCircle,
-    Eye, Upload, Sparkles, X, AlertCircle, Calendar
+    Eye, Upload, Sparkles, X, AlertCircle, Calendar, ChevronDown
 } from 'lucide-react';
 import { CampaignModal } from '@/components/campaign/CampaignModal';
+import {
+    CAMPAIGN_EFFECTS,
+    getCampaignEffectMeta,
+    resolveCampaignEffect,
+    type CampaignEffectId,
+} from '@/lib/campaign-effects';
 
 interface Campaign {
     id: string;
@@ -18,6 +24,7 @@ interface Campaign {
     buttonLink: string | null;
     isActive: boolean;
     showEffects: boolean;
+    effectType?: string | null;
     translations?: string | null;
     startDate: string | null;
     endDate: string | null;
@@ -60,6 +67,7 @@ export default function AdminCampaignsPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
     const [previewCampaigns, setPreviewCampaigns] = useState<Campaign[]>([]);
+    const [isEffectPickerOpen, setIsEffectPickerOpen] = useState(false);
 
     // Form State (German master inputs)
     const [formData, setFormData] = useState({
@@ -71,7 +79,8 @@ export default function AdminCampaignsPage() {
         startDate: '',
         endDate: '',
         isActive: false,
-        showEffects: true,
+        showEffects: false,
+        effectType: 'none' as CampaignEffectId,
     });
 
     // Local image file selection (uploaded only on save)
@@ -133,6 +142,7 @@ export default function AdminCampaignsPage() {
         resetFileSelection();
         setErrorMessage(null);
         setEditingCampaign(null);
+        setIsEffectPickerOpen(false);
         setFormData({
             badge: 'SONDERANGEBOT',
             title: '',
@@ -142,7 +152,8 @@ export default function AdminCampaignsPage() {
             startDate: '',
             endDate: '',
             isActive: true,
-            showEffects: true,
+            showEffects: false,
+            effectType: 'none',
         });
         setIsModalOpen(true);
     };
@@ -151,6 +162,8 @@ export default function AdminCampaignsPage() {
         resetFileSelection();
         setErrorMessage(null);
         setEditingCampaign(campaign);
+        setIsEffectPickerOpen(false);
+        const resolvedEffect = resolveCampaignEffect(campaign.effectType, campaign.showEffects);
         setFormData({
             badge: campaign.badge || '',
             title: campaign.title,
@@ -160,7 +173,8 @@ export default function AdminCampaignsPage() {
             startDate: toInputDate(campaign.startDate),
             endDate: toInputDate(campaign.endDate),
             isActive: campaign.isActive,
-            showEffects: campaign.showEffects ?? true,
+            showEffects: resolvedEffect !== 'none',
+            effectType: resolvedEffect,
         });
         setIsModalOpen(true);
     };
@@ -168,6 +182,7 @@ export default function AdminCampaignsPage() {
     const handleCloseFormModal = () => {
         resetFileSelection();
         setErrorMessage(null);
+        setIsEffectPickerOpen(false);
         setIsModalOpen(false);
     };
 
@@ -275,7 +290,8 @@ export default function AdminCampaignsPage() {
                     startDate: formData.startDate || null,
                     endDate: formData.endDate || null,
                     isActive: formData.isActive,
-                    showEffects: formData.showEffects,
+                    showEffects: formData.effectType !== 'none',
+                    effectType: formData.effectType,
                 }),
             });
 
@@ -302,6 +318,29 @@ export default function AdminCampaignsPage() {
     };
 
     const activePreviewImage = localPreviewUrl || formData.imageUrl || null;
+
+    const handlePreviewSelectedEffect = () => {
+        const draft: Campaign = {
+            id: editingCampaign?.id || 'draft-effect-preview',
+            badge: formData.badge || 'ANGEBOT DES MONATS',
+            title: formData.title || 'Effekt-Vorschau: GATE 11 Aktion',
+            subtitle: formData.subtitle || 'Dein Führerschein. Dein Vorteil.',
+            description:
+                formData.description ||
+                'So erscheint Ihre Kampagne mit dem ausgewählten Hintergrund-Effekt auf der Webseite.',
+            imageUrl: activePreviewImage,
+            buttonText: 'Zu den Paketen',
+            buttonLink: '/Fahrakademie',
+            isActive: true,
+            showEffects: formData.effectType !== 'none',
+            effectType: formData.effectType,
+            startDate: formData.startDate || null,
+            endDate: formData.endDate || null,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+        };
+        setPreviewCampaigns([draft]);
+    };
 
     return (
         <div className="space-y-8">
@@ -458,13 +497,19 @@ export default function AdminCampaignsPage() {
                                                 GEPLANT
                                             </span>
                                         )}
-                                        <span className={`px-2.5 py-1 rounded-md text-[10px] font-semibold tracking-wide ${
-                                            camp.showEffects !== false
-                                                ? 'bg-amber-500/10 text-amber-300 border border-amber-500/25'
-                                                : 'bg-white/5 text-neutral-400 border border-white/10'
-                                        }`}>
-                                            {camp.showEffects !== false ? '✨ Mit Geschenk-Effekten' : 'Schlichte Ansicht'}
-                                        </span>
+                                        {(() => {
+                                            const effId = resolveCampaignEffect(camp.effectType, camp.showEffects);
+                                            const effMeta = getCampaignEffectMeta(effId);
+                                            return (
+                                                <span className={`px-2.5 py-1 rounded-md text-[10px] font-semibold tracking-wide ${
+                                                    effId !== 'none'
+                                                        ? `bg-amber-500/10 text-amber-200 border ${effMeta.accentBorder}`
+                                                        : 'bg-white/5 text-neutral-400 border border-white/10'
+                                                }`}>
+                                                    {effMeta.shortLabel}
+                                                </span>
+                                            );
+                                        })()}
                                     </div>
 
                                     {/* Quick Active Toggle Button */}
@@ -542,8 +587,8 @@ export default function AdminCampaignsPage() {
             {/* CREATE / EDIT MODAL */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-                    <div className="relative w-full max-w-2xl bg-[#0f0f0f] border border-primary/30 rounded-2xl shadow-2xl overflow-hidden my-8">
-                        <div className="p-5 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
+                    <div className="relative w-full max-w-3xl max-h-[92vh] flex flex-col bg-[#0f0f0f] border border-primary/30 rounded-2xl shadow-2xl overflow-hidden my-4">
+                        <div className="p-5 border-b border-white/10 flex items-center justify-between bg-white/[0.02] shrink-0">
                             <h2 className="text-lg font-serif font-bold text-white flex items-center gap-2">
                                 <Megaphone className="w-5 h-5 text-primary" />
                                 {editingCampaign ? 'Kampagne bearbeiten' : 'Neue Kampagne erstellen'}
@@ -556,7 +601,7 @@ export default function AdminCampaignsPage() {
                             </button>
                         </div>
 
-                        <form onSubmit={handleSave} className="p-6 space-y-4">
+                        <form onSubmit={handleSave} className="p-6 space-y-4 overflow-y-auto">
                             {errorMessage && (
                                 <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
                                     <AlertCircle className="w-4 h-4 shrink-0" />
@@ -716,19 +761,121 @@ export default function AdminCampaignsPage() {
                                 </p>
                             </div>
 
-                            {/* 6. Hintergrund-Geschenke & Glitzereffekte */}
-                            <div className="pt-2 flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/10">
-                                <div>
-                                    <p className="text-sm font-semibold text-white">Hintergrund-Geschenke & Glitzereffekte anzeigen</p>
-                                    <p className="text-xs text-neutral-400">Wenn aktiviert, erscheinen animierte Geschenksymbole und goldene Funken rund um das Fenster.</p>
-                                </div>
-                                <input
-                                    type="checkbox"
-                                    checked={formData.showEffects}
-                                    onChange={(e) => setFormData({ ...formData, showEffects: e.target.checked })}
-                                    className="w-5 h-5 accent-[#D4AF37] cursor-pointer"
-                                />
-                            </div>
+                            {/* 6. Hintergrund-Effekt & Saisonales Thema (Aufklappbar) */}
+                            {(() => {
+                                const selectedEffectMeta = getCampaignEffectMeta(formData.effectType);
+                                return (
+                                    <div className="rounded-xl bg-white/[0.02] border border-white/10 overflow-hidden">
+                                        <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsEffectPickerOpen((prev) => !prev)}
+                                                className="flex-1 flex items-center justify-between gap-3 text-left cursor-pointer group"
+                                            >
+                                                <div className="min-w-0">
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <p className="text-sm font-semibold text-white group-hover:text-primary transition-colors">
+                                                            Hintergrund-Effekt & Saisonales Thema
+                                                        </p>
+                                                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold border ${
+                                                            formData.effectType !== 'none'
+                                                                ? `bg-amber-500/10 text-amber-200 ${selectedEffectMeta.accentBorder}`
+                                                                : 'bg-white/5 text-neutral-400 border-white/15'
+                                                        }`}>
+                                                            <span>{selectedEffectMeta.emoji}</span>
+                                                            <span>{selectedEffectMeta.label}</span>
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-xs text-neutral-400 mt-0.5">
+                                                        Klicken Sie hier, um einen passenden Hintergrund-Effekt auszuwählen.
+                                                    </p>
+                                                </div>
+                                                <ChevronDown
+                                                    className={`w-5 h-5 text-neutral-400 group-hover:text-white shrink-0 transition-transform duration-200 ${
+                                                        isEffectPickerOpen ? 'rotate-180 text-primary' : ''
+                                                    }`}
+                                                />
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={handlePreviewSelectedEffect}
+                                                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold bg-primary/15 hover:bg-primary/25 text-primary border border-primary/40 transition-colors shrink-0 cursor-pointer"
+                                            >
+                                                <Eye className="w-3.5 h-3.5" />
+                                                Effekt live testen
+                                            </button>
+                                        </div>
+
+                                        {isEffectPickerOpen && (
+                                            <div className="p-4 pt-3 border-t border-white/10 bg-black/25">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                                                    {CAMPAIGN_EFFECTS.map((effect) => {
+                                                        const isSelected = formData.effectType === effect.id;
+                                                        return (
+                                                            <button
+                                                                key={effect.id}
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    setFormData({
+                                                                        ...formData,
+                                                                        effectType: effect.id,
+                                                                        showEffects: effect.id !== 'none',
+                                                                    })
+                                                                }
+                                                                className={`text-left rounded-xl border transition-all cursor-pointer overflow-hidden flex flex-col justify-between ${
+                                                                    isSelected
+                                                                        ? 'border-primary bg-primary/10 ring-1 ring-primary/50 shadow-[0_0_20px_rgba(212,175,55,0.2)]'
+                                                                        : 'border-white/10 bg-black/40 hover:border-white/25 hover:bg-white/[0.04]'
+                                                                }`}
+                                                            >
+                                                                {/* Miniature WebP Preview Strip */}
+                                                                <div className={`relative h-16 w-full overflow-hidden bg-gradient-to-br ${effect.previewBg}`}>
+                                                                    {effect.backdropImage ? (
+                                                                        <>
+                                                                            <img
+                                                                                src={effect.backdropImage}
+                                                                                alt=""
+                                                                                loading="lazy"
+                                                                                decoding="async"
+                                                                                className="w-full h-full object-cover object-center opacity-85"
+                                                                            />
+                                                                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/20" />
+                                                                        </>
+                                                                    ) : (
+                                                                        <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.06),transparent_70%)]">
+                                                                            <span className="text-[10px] uppercase tracking-widest text-neutral-500 font-semibold">
+                                                                                Ohne Effekt
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
+
+                                                                    <div className="absolute inset-x-2.5 bottom-1.5 flex items-center justify-between gap-1.5">
+                                                                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-black/75 border border-white/15 text-[11px] font-bold text-white backdrop-blur-sm truncate">
+                                                                            <span>{effect.emoji}</span>
+                                                                            <span className="truncate">{effect.label}</span>
+                                                                        </span>
+                                                                        {isSelected && (
+                                                                            <CheckCircle2 className="w-4 h-4 text-primary shrink-0 drop-shadow-[0_0_8px_rgba(0,0,0,0.9)]" />
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Short Description */}
+                                                                <div className="p-2.5">
+                                                                    <p className="text-[11px] text-neutral-400 leading-snug line-clamp-2">
+                                                                        {effect.description}
+                                                                    </p>
+                                                                </div>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })()}
 
                             {/* 7. Kampagne sofort aktivieren */}
                             <div className="pt-2 flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/10">

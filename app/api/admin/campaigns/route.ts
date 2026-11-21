@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { translateCampaignFields } from '@/lib/translation-service';
+import { resolveCampaignEffect } from '@/lib/campaign-effects';
 import {
     deactivateExpiredCampaigns,
     parseStartDate,
@@ -37,6 +38,7 @@ export async function POST(request: Request) {
             buttonLink,
             isActive,
             showEffects,
+            effectType,
             startDate,
             endDate,
         } = body;
@@ -44,6 +46,8 @@ export async function POST(request: Request) {
         if (!title || !description) {
             return NextResponse.json({ error: 'Title and description are required' }, { status: 400 });
         }
+
+        const resolvedEffect = resolveCampaignEffect(effectType, showEffects);
 
         const translations = await translateCampaignFields({
             title,
@@ -62,7 +66,8 @@ export async function POST(request: Request) {
                 buttonText: buttonText || 'Zu den Paketen',
                 buttonLink: buttonLink || '/Fahrakademie',
                 isActive: Boolean(isActive),
-                showEffects: showEffects !== undefined ? Boolean(showEffects) : true,
+                showEffects: resolvedEffect !== 'none',
+                effectType: resolvedEffect,
                 translations,
                 startDate: parseStartDate(startDate),
                 endDate: parseEndDate(endDate),

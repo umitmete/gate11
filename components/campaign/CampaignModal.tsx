@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, ArrowRight, Gift, Percent, Award, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Sparkles, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useLanguage } from '@/components/providers/LanguageProvider';
+import { getCampaignEffectMeta, resolveCampaignEffect } from '@/lib/campaign-effects';
+import { CampaignBackdropEffects, CampaignCardEmblem } from './CampaignBackdropEffects';
 
 export interface CampaignData {
     id: string;
@@ -17,6 +19,7 @@ export interface CampaignData {
     buttonLink: string | null;
     isActive: boolean;
     showEffects?: boolean;
+    effectType?: string | null;
     translations?: string | null;
     updatedAt?: string;
 }
@@ -35,92 +38,6 @@ const modalLabels: Record<string, { cta: string; close: string }> = {
     ar: { cta: 'عرض الباقات', close: 'إغلاق' },
     fa: { cta: 'مشاهده بسته‌ها', close: 'بستن' },
 };
-
-const FLOATING_ORBS = [
-    {
-        id: 'left-top',
-        Icon: Gift,
-        position: 'top-[8%] left-[4%] md:top-[12%] md:left-[8%]',
-        visibility: 'flex',
-        size: 'w-6 h-6 md:w-7 md:h-7',
-        yRange: [0, -14, 0],
-        rotateRange: [-6, 6, -6],
-        duration: 4.2,
-        delay: 0,
-    },
-    {
-        id: 'left-middle',
-        Icon: Percent,
-        position: 'top-[46%] left-[3%] md:left-[6%]',
-        visibility: 'hidden md:flex',
-        size: 'w-6 h-6',
-        yRange: [0, 12, 0],
-        rotateRange: [5, -5, 5],
-        duration: 4.8,
-        delay: 0.4,
-    },
-    {
-        id: 'left-bottom',
-        Icon: Sparkles,
-        position: 'bottom-[8%] left-[5%] md:bottom-[14%] md:left-[10%]',
-        visibility: 'flex',
-        size: 'w-5 h-5 md:w-6 md:h-6',
-        yRange: [0, -10, 0],
-        rotateRange: [-4, 8, -4],
-        duration: 3.6,
-        delay: 0.8,
-    },
-    {
-        id: 'right-top',
-        Icon: Award,
-        position: 'top-[10%] right-[4%] md:top-[14%] md:right-[8%]',
-        visibility: 'flex',
-        size: 'w-6 h-6 md:w-7 md:h-7',
-        yRange: [0, 14, 0],
-        rotateRange: [6, -6, 6],
-        duration: 4.5,
-        delay: 0.2,
-    },
-    {
-        id: 'right-middle',
-        Icon: Gift,
-        position: 'top-[48%] right-[3%] md:right-[6%]',
-        visibility: 'hidden md:flex',
-        size: 'w-6 h-6',
-        yRange: [0, -12, 0],
-        rotateRange: [-7, 5, -7],
-        duration: 3.9,
-        delay: 0.6,
-    },
-    {
-        id: 'right-bottom',
-        Icon: Star,
-        position: 'bottom-[9%] right-[5%] md:bottom-[15%] md:right-[10%]',
-        visibility: 'flex',
-        size: 'w-5 h-5 md:w-6 md:h-6',
-        yRange: [0, 10, 0],
-        rotateRange: [4, -8, 4],
-        duration: 4.4,
-        delay: 1.0,
-    },
-];
-
-const BOKEH_PARTICLES = [
-    { top: '12%', left: '22%', size: 6, duration: 3.4, delay: 0.1, isStar: true },
-    { top: '24%', left: '14%', size: 4, duration: 4.2, delay: 0.7, isStar: false },
-    { top: '34%', left: '84%', size: 7, duration: 3.8, delay: 0.3, isStar: true },
-    { top: '18%', left: '74%', size: 5, duration: 4.5, delay: 1.1, isStar: false },
-    { top: '65%', left: '16%', size: 7, duration: 3.6, delay: 0.5, isStar: true },
-    { top: '78%', left: '26%', size: 4, duration: 4.9, delay: 1.3, isStar: false },
-    { top: '68%', left: '82%', size: 5, duration: 3.9, delay: 0.2, isStar: false },
-    { top: '82%', left: '72%', size: 6, duration: 4.1, delay: 0.9, isStar: true },
-    { top: '6%', left: '52%', size: 5, duration: 4.7, delay: 0.4, isStar: false },
-    { top: '90%', left: '48%', size: 6, duration: 3.5, delay: 0.8, isStar: true },
-    { top: '42%', left: '19%', size: 4, duration: 4.3, delay: 1.4, isStar: false },
-    { top: '56%', left: '88%', size: 5, duration: 3.7, delay: 0.6, isStar: false },
-    { top: '28%', left: '88%', size: 4, duration: 5.0, delay: 1.2, isStar: false },
-    { top: '74%', left: '11%', size: 6, duration: 4.0, delay: 0.3, isStar: true },
-];
 
 export function CampaignModal({ campaign, campaigns, isOpen, onClose }: CampaignModalProps) {
     const { language } = useLanguage();
@@ -207,7 +124,8 @@ export function CampaignModal({ campaign, campaigns, isOpen, onClose }: Campaign
 
     if (!mounted || !activeCampaign) return null;
 
-    const showEffects = activeCampaign.showEffects !== false;
+    const activeEffect = resolveCampaignEffect(activeCampaign.effectType, activeCampaign.showEffects);
+    const effectMeta = getCampaignEffectMeta(activeEffect);
 
     let localized: { title?: string; subtitle?: string; badge?: string; description?: string } | null = null;
     if (language !== 'de' && activeCampaign.translations) {
@@ -232,86 +150,8 @@ export function CampaignModal({ campaign, campaigns, isOpen, onClose }: Campaign
                     dir={isRtl ? 'rtl' : 'ltr'}
                     className="fixed inset-0 z-[9999] overflow-y-auto bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 cursor-pointer"
                 >
-                    {/* Animated Luxury Black & Gold Celebratory Backdrop (Optional per campaign) */}
-                    {showEffects && (
-                        <div
-                            aria-hidden="true"
-                            className="pointer-events-none select-none fixed inset-0 overflow-hidden z-0"
-                        >
-                            {/* Subtle Golden Luxury Grid */}
-                            <div className="absolute inset-0 bg-[linear-gradient(rgba(212,175,55,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(212,175,55,0.04)_1px,transparent_1px)] bg-[size:80px_80px]" />
-
-                            {/* Ambient Pulsing Gold Spotlights */}
-                            <motion.div
-                                animate={{ opacity: [0.35, 0.7, 0.35], scale: [0.95, 1.08, 0.95] }}
-                                transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[540px] h-[540px] bg-primary/15 blur-[130px] rounded-full"
-                            />
-                            <motion.div
-                                animate={{ opacity: [0.25, 0.55, 0.25], scale: [1, 1.12, 1] }}
-                                transition={{ duration: 6.2, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }}
-                                className="absolute -top-24 -left-24 w-96 h-96 bg-primary/15 blur-[130px] rounded-full"
-                            />
-                            <motion.div
-                                animate={{ opacity: [0.25, 0.55, 0.25], scale: [1.05, 0.95, 1.05] }}
-                                transition={{ duration: 5.6, repeat: Infinity, ease: 'easeInOut', delay: 1.2 }}
-                                className="absolute -bottom-24 -right-24 w-96 h-96 bg-primary/15 blur-[130px] rounded-full"
-                            />
-
-                            {/* Twinkling Golden Particles / Bokeh Sparkles */}
-                            {BOKEH_PARTICLES.map((particle, idx) => (
-                                <motion.div
-                                    key={idx}
-                                    style={{ top: particle.top, left: particle.left }}
-                                    animate={{
-                                        y: [0, -18, 0],
-                                        opacity: [0.2, 0.9, 0.2],
-                                        scale: [0.85, 1.25, 0.85],
-                                    }}
-                                    transition={{
-                                        duration: particle.duration,
-                                        repeat: Infinity,
-                                        ease: 'easeInOut',
-                                        delay: particle.delay,
-                                    }}
-                                    className="absolute"
-                                >
-                                    {particle.isStar ? (
-                                        <Sparkles
-                                            style={{ width: particle.size * 2.2, height: particle.size * 2.2 }}
-                                            className="text-primary/70 drop-shadow-[0_0_8px_rgba(212,175,55,0.75)]"
-                                        />
-                                    ) : (
-                                        <div
-                                            style={{ width: particle.size, height: particle.size }}
-                                            className="rounded-full bg-primary/80 shadow-[0_0_12px_rgba(212,175,55,0.9)]"
-                                        />
-                                    )}
-                                </motion.div>
-                            ))}
-
-                            {/* Floating Luxury Gift & Campaign Orbs */}
-                            {FLOATING_ORBS.map(({ id, Icon, position, visibility, size, yRange, rotateRange, duration, delay }) => (
-                                <motion.div
-                                    key={id}
-                                    animate={{
-                                        y: yRange,
-                                        rotate: rotateRange,
-                                        scale: [1, 1.06, 1],
-                                    }}
-                                    transition={{
-                                        duration,
-                                        repeat: Infinity,
-                                        ease: 'easeInOut',
-                                        delay,
-                                    }}
-                                    className={`absolute ${position} ${visibility} items-center justify-center bg-[#110f08]/80 backdrop-blur-md border border-primary/40 shadow-[0_0_35px_rgba(212,175,55,0.3)] rounded-2xl p-3.5 md:p-4`}
-                                >
-                                    <Icon className={`${size} text-primary drop-shadow-[0_0_10px_rgba(212,175,55,0.65)]`} />
-                                </motion.div>
-                            ))}
-                        </div>
-                    )}
+                    {/* Animated Seasonal & Promotional Backdrop (Configurable per campaign) */}
+                    <CampaignBackdropEffects effectId={activeEffect} />
 
                     {/* Modal Card + Outside Carousel Arrows Container */}
                     <div
@@ -348,14 +188,10 @@ export function CampaignModal({ campaign, campaigns, isOpen, onClose }: Campaign
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 15 }}
                             transition={{ duration: 0.25, ease: 'easeOut' }}
-                            className={`relative z-10 w-full max-w-lg bg-[#0d0d0d] rounded-3xl overflow-hidden cursor-default border ${
-                                showEffects
-                                    ? 'border-primary/45 ring-1 ring-primary/20 shadow-[0_0_90px_rgba(212,175,55,0.28)]'
-                                    : 'border-primary/35 shadow-[0_0_60px_rgba(0,0,0,0.85)]'
-                            }`}
+                            className={`relative z-10 w-full max-w-lg bg-[#0d0d0d] rounded-3xl overflow-hidden cursor-default border ${effectMeta.modalBorderClass}`}
                         >
-                            {/* Top Accent Gold Bar */}
-                            <div className="h-1 bg-gradient-to-r from-primary/30 via-primary to-primary/30" />
+                            {/* Top Accent Bar */}
+                            <div className={`h-1 ${effectMeta.topBarClass}`} />
 
                             {/* Slide Counter Pill */}
                             {hasMultiple && (
@@ -399,18 +235,10 @@ export function CampaignModal({ campaign, campaigns, isOpen, onClose }: Campaign
 
                                     {/* Slide Text Area */}
                                     <div className="px-6 pt-6 sm:px-8 sm:pt-8 space-y-4">
-                                        {/* Floating Gift Emblem + Badge Row */}
-                                        {(showEffects || displayBadge) && (
+                                        {/* Floating Effect Emblem + Badge Row */}
+                                        {(activeEffect !== 'none' || displayBadge) && (
                                             <div className="flex items-center gap-2.5 flex-wrap">
-                                                {showEffects && (
-                                                    <motion.div
-                                                        animate={{ rotate: [-5, 5, -5], scale: [1, 1.08, 1] }}
-                                                        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                                                        className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-primary/20 border border-primary/40 shadow-[0_0_18px_rgba(212,175,55,0.25)] shrink-0"
-                                                    >
-                                                        <Gift className="w-4 h-4 text-primary" />
-                                                    </motion.div>
-                                                )}
+                                                <CampaignCardEmblem effectId={activeEffect} />
                                                 {displayBadge && (
                                                     <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold tracking-widest uppercase bg-primary/15 text-primary border border-primary/30 shadow-[0_0_15px_rgba(212,175,55,0.15)]">
                                                         <Sparkles className="w-3.5 h-3.5 text-primary shrink-0" />

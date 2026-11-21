@@ -226,6 +226,7 @@ model Campaign {
   buttonLink  String?
   isActive     Boolean  @default(false)
   showEffects  Boolean  @default(true)
+  effectType   String?
   translations String?
   startDate    DateTime?
   endDate      DateTime?

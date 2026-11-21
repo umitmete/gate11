@@ -20,6 +20,7 @@ export default async function Home() {
       buttonLink: camp.buttonLink,
       isActive: camp.isActive,
       showEffects: camp.showEffects,
+      effectType: camp.effectType ?? null,
       translations: camp.translations,
       updatedAt: camp.updatedAt.toISOString(),
     }));
