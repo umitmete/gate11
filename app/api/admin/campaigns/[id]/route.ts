@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/db';
 import {
     deleteCampaignImage,
@@ -95,6 +96,7 @@ export async function PUT(
             },
         });
 
+        revalidatePath('/');
         return NextResponse.json(updatedCampaign);
     } catch (error) {
         console.error('Failed to update campaign:', error);
@@ -121,6 +123,7 @@ export async function DELETE(
         await prisma.campaign.delete({
             where: { id },
         });
+        revalidatePath('/');
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Failed to delete campaign:', error);

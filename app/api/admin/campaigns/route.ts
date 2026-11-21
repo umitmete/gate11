@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/db';
 import { translateCampaignFields } from '@/lib/translation-service';
 import { resolveCampaignEffect } from '@/lib/campaign-effects';
@@ -74,6 +75,7 @@ export async function POST(request: Request) {
             },
         });
 
+        revalidatePath('/');
         return NextResponse.json(campaign, { status: 201 });
     } catch (error) {
         console.error('Failed to create campaign:', error);
