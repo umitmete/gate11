@@ -60,6 +60,18 @@ function getSafeExtension(file: File): string {
     return mimeMap[normalizedMime] || 'jpg';
 }
 
+function getNormalizedBlobToken(): string | undefined {
+    const raw = process.env.BLOB_READ_WRITE_TOKEN;
+    if (!raw) return undefined;
+    const cleaned = raw
+        .trim()
+        .replace(/^BLOB_READ_WRITE_TOKEN\s*=\s*/i, '')
+        .trim()
+        .replace(/^["'`]+|["'`]+$/g, '')
+        .trim();
+    return cleaned || undefined;
+}
+
 export async function uploadCampaignImage(file: File): Promise<string> {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
@@ -67,7 +79,7 @@ export async function uploadCampaignImage(file: File): Promise<string> {
     const filename = `campaign_${Date.now()}_${crypto.randomUUID().slice(0, 8)}.${ext}`;
     const contentType = MIME_BY_EXT[ext] || 'image/jpeg';
 
-    const token = process.env.BLOB_READ_WRITE_TOKEN?.trim();
+    const token = getNormalizedBlobToken();
     const isVercel = Boolean(process.env.VERCEL);
 
     if (token) {
@@ -83,8 +95,10 @@ export async function uploadCampaignImage(file: File): Promise<string> {
         } catch (blobError) {
             console.error('Vercel Blob upload failed:', blobError);
             if (isVercel) {
+                const storeHint = token.split('_')[3] || 'unknown';
+                const prefixOk = token.startsWith('vercel_blob_rw_');
                 throw new Error(
-                    `Vercel Blob upload failed: ${blobError instanceof Error ? blobError.message : 'Unknown error'}`
+                    `Vercel Blob upload failed: ${blobError instanceof Error ? blobError.message : 'Unknown error'} (store: ${storeHint}, prefixOk: ${prefixOk}, len: ${token.length})`
                 );
             }
         }
@@ -105,7 +119,7 @@ export async function deleteCampaignImage(imageUrl: string | null | undefined): 
     if (!imageUrl || typeof imageUrl !== 'string') return true;
 
     if (imageUrl.includes('.blob.vercel-storage.com')) {
-        const token = process.env.BLOB_READ_WRITE_TOKEN?.trim();
+        const token = getNormalizedBlobToken();
         const delOptions = token ? { token } : undefined;
 
         for (let attempt = 0; attempt < 2; attempt++) {
