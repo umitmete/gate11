@@ -842,10 +842,16 @@ export default function AdminCampaignsPage() {
                                                                             />
                                                                             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/20" />
                                                                         </>
-                                                                    ) : (
+                                                                    ) : effect.id === 'none' ? (
                                                                         <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.06),transparent_70%)]">
                                                                             <span className="text-[10px] uppercase tracking-widest text-neutral-500 font-semibold">
                                                                                 Ohne Effekt
+                                                                            </span>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_20%_30%,rgba(229,4,18,0.34),transparent_52%),radial-gradient(circle_at_82%_28%,rgba(212,175,55,0.34),transparent_52%)] backdrop-blur-sm">
+                                                                            <span className="text-[10px] uppercase tracking-widest text-amber-200/90 font-bold drop-shadow-[0_1px_6px_rgba(0,0,0,0.85)]">
+                                                                                Transparent • Blur
                                                                             </span>
                                                                         </div>
                                                                     )}

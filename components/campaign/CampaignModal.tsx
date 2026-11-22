@@ -148,7 +148,7 @@ export function CampaignModal({ campaign, campaigns, isOpen, onClose }: Campaign
                 <div
                     onClick={onClose}
                     dir={isRtl ? 'rtl' : 'ltr'}
-                    className="fixed inset-0 z-[9999] overflow-y-auto bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 cursor-pointer"
+                    className={`fixed inset-0 z-[9999] overflow-y-auto ${effectMeta.overlayClass || 'bg-black/90 backdrop-blur-md'} flex items-center justify-center p-3 sm:p-4 cursor-pointer`}
                 >
                     {/* Animated Seasonal & Promotional Backdrop (Configurable per campaign) */}
                     <CampaignBackdropEffects effectId={activeEffect} />

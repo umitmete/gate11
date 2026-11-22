@@ -2342,14 +2342,681 @@ const createValentineDriveScene: SceneFactory = (width, height, densityScale) =>
     };
 };
 
+// =====================================================================
+// 18. GESCHENK-FEUERWERK — FROSTED HERO BLUR, GRAND FIREWORKS,
+//     3D METALLIC BALLOONS, LUXURY GIFT BOXES & FOIL CONFETTI
+// =====================================================================
+interface BalloonPalette {
+    highlight: string;
+    mid: string;
+    rim: string;
+    bounce: string;
+    glow: string;
+}
+
+const BALLOON_PALETTES: BalloonPalette[] = [
+    {
+        highlight: '#ffb8c4',
+        mid: '#e50412',
+        rim: '#590209',
+        bounce: 'rgba(255, 204, 148, 0.34)',
+        glow: '229, 4, 18',
+    },
+    {
+        highlight: '#fff7db',
+        mid: '#d4af37',
+        rim: '#6b4a0c',
+        bounce: 'rgba(255, 248, 224, 0.38)',
+        glow: '248, 224, 150',
+    },
+    {
+        highlight: '#ffd6e2',
+        mid: '#e11d48',
+        rim: '#630822',
+        bounce: 'rgba(255, 215, 190, 0.3)',
+        glow: '244, 63, 94',
+    },
+    {
+        highlight: '#ffffff',
+        mid: '#e6dccf',
+        rim: '#756858',
+        bounce: 'rgba(255, 224, 155, 0.36)',
+        glow: '255, 240, 200',
+    },
+];
+
+function drawLuxuryBalloon(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    radius: number,
+    tilt: number,
+    stringPhase: number,
+    palette: BalloonPalette,
+    alpha: number
+) {
+    if (alpha <= 0.01 || radius <= 2) return;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(x, y);
+    ctx.rotate(tilt);
+
+    // 1. Gently waving metallic-gold ribbon string descending from tied knot
+    const knotY = radius * 1.13;
+    const stringLen = radius * 2.15;
+    const sway1 = Math.sin(stringPhase) * radius * 0.28;
+    const sway2 = Math.cos(stringPhase * 0.8 + 1.1) * radius * 0.24;
+    ctx.beginPath();
+    ctx.moveTo(0, knotY + radius * 0.08);
+    ctx.bezierCurveTo(
+        sway1,
+        knotY + stringLen * 0.35,
+        sway2,
+        knotY + stringLen * 0.7,
+        sway1 * 0.55,
+        knotY + stringLen
+    );
+    ctx.strokeStyle = 'rgba(248, 224, 150, 0.65)';
+    ctx.lineWidth = Math.max(0.9, radius * 0.045);
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    // 2. Plump teardrop-oval balloon silhouette
+    const traceBalloonBody = () => {
+        ctx.beginPath();
+        ctx.moveTo(0, -radius * 1.08);
+        ctx.bezierCurveTo(
+            radius * 0.94,
+            -radius * 1.06,
+            radius * 0.96,
+            radius * 0.34,
+            0,
+            radius * 1.1
+        );
+        ctx.bezierCurveTo(
+            -radius * 0.96,
+            radius * 0.34,
+            -radius * 0.94,
+            -radius * 1.06,
+            0,
+            -radius * 1.08
+        );
+        ctx.closePath();
+    };
+
+    const bodyGrad = ctx.createRadialGradient(
+        -radius * 0.28,
+        -radius * 0.38,
+        radius * 0.08,
+        0,
+        radius * 0.04,
+        radius * 1.24
+    );
+    bodyGrad.addColorStop(0, palette.highlight);
+    bodyGrad.addColorStop(0.32, palette.mid);
+    bodyGrad.addColorStop(0.84, palette.rim);
+    bodyGrad.addColorStop(1, palette.rim);
+
+    traceBalloonBody();
+    ctx.fillStyle = bodyGrad;
+    ctx.fill();
+
+    // Subtle warm ambient rim bounce on lower-right curve
+    ctx.save();
+    traceBalloonBody();
+    ctx.clip();
+    const bounceGrad = ctx.createRadialGradient(
+        radius * 0.5,
+        radius * 0.62,
+        0,
+        radius * 0.42,
+        radius * 0.5,
+        radius * 0.85
+    );
+    bounceGrad.addColorStop(0, palette.bounce);
+    bounceGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = bounceGrad;
+    ctx.fillRect(-radius * 1.1, -radius * 1.2, radius * 2.2, radius * 2.5);
+    ctx.restore();
+
+    // Crisp rim outline
+    traceBalloonBody();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+
+    // Glossy curved crescent specular highlight on upper-left dome
+    ctx.beginPath();
+    ctx.moveTo(-radius * 0.44, -radius * 0.56);
+    ctx.bezierCurveTo(
+        -radius * 0.56,
+        -radius * 0.34,
+        -radius * 0.52,
+        -radius * 0.08,
+        -radius * 0.36,
+        radius * 0.08
+    );
+    ctx.bezierCurveTo(
+        -radius * 0.39,
+        -radius * 0.14,
+        -radius * 0.36,
+        -radius * 0.36,
+        -radius * 0.23,
+        -radius * 0.54
+    );
+    ctx.bezierCurveTo(
+        -radius * 0.3,
+        -radius * 0.64,
+        -radius * 0.4,
+        -radius * 0.64,
+        -radius * 0.44,
+        -radius * 0.56
+    );
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.48)';
+    ctx.fill();
+
+    // Tiny glossy studio gleam dot above crescent
+    ctx.beginPath();
+    ctx.ellipse(-radius * 0.19, -radius * 0.72, radius * 0.095, radius * 0.055, -0.45, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.62)';
+    ctx.fill();
+
+    // Tied latex knot & metallic collar at bottom neck
+    ctx.beginPath();
+    ctx.moveTo(-radius * 0.09, radius * 1.16);
+    ctx.lineTo(radius * 0.09, radius * 1.16);
+    ctx.lineTo(0, radius * 1.07);
+    ctx.closePath();
+    ctx.fillStyle = palette.rim;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.ellipse(0, radius * 1.12, radius * 0.085, radius * 0.032, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#f8e096';
+    ctx.fill();
+
+    ctx.restore();
+}
+
+interface GiftPalette {
+    bodyLight: string;
+    bodyMid: string;
+    bodyDark: string;
+    lidLight: string;
+    lidDark: string;
+    ribbonLight: string;
+    ribbonMid: string;
+    ribbonDark: string;
+    glintRgb: string;
+}
+
+const GIFT_PALETTES: GiftPalette[] = [
+    {
+        // Ruby Velvet + 24k Gold Ribbon
+        bodyLight: '#e50412',
+        bodyMid: '#a50615',
+        bodyDark: '#52030b',
+        lidLight: '#f42436',
+        lidDark: '#7a0511',
+        ribbonLight: '#fff4cb',
+        ribbonMid: '#d4af37',
+        ribbonDark: '#8b6511',
+        glintRgb: '252, 226, 152',
+    },
+    {
+        // Obsidian Satin + Crimson Gold Ribbon
+        bodyLight: '#33363f',
+        bodyMid: '#181a20',
+        bodyDark: '#0a0b0f',
+        lidLight: '#434752',
+        lidDark: '#121318',
+        ribbonLight: '#ff7085',
+        ribbonMid: '#e50412',
+        ribbonDark: '#7d0410',
+        glintRgb: '248, 224, 150',
+    },
+    {
+        // Champagne Gold + Ruby Satin Ribbon
+        bodyLight: '#f8e2a0',
+        bodyMid: '#d4af37',
+        bodyDark: '#7c5c12',
+        lidLight: '#fff2c2',
+        lidDark: '#a57f20',
+        ribbonLight: '#ff667e',
+        ribbonMid: '#d90416',
+        ribbonDark: '#6b030c',
+        glintRgb: '255, 248, 224',
+    },
+    {
+        // Ivory Pearl + Crimson Satin Ribbon
+        bodyLight: '#fffaf2',
+        bodyMid: '#ddd2c4',
+        bodyDark: '#8f8273',
+        lidLight: '#ffffff',
+        lidDark: '#afa394',
+        ribbonLight: '#ff7388',
+        ribbonMid: '#e50412',
+        ribbonDark: '#7c040f',
+        glintRgb: '255, 232, 185',
+    },
+];
+
+function drawLuxuryGiftBox(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    size: number,
+    rot: number,
+    time: number,
+    sparklePhase: number,
+    palette: GiftPalette,
+    alpha: number
+) {
+    if (alpha <= 0.01 || size <= 4) return;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(x, y);
+    ctx.rotate(rot);
+
+    const bw = size * 1.72;
+    const bh = size * 1.46;
+    const lidH = size * 0.34;
+    const lidW = bw * 1.09;
+    const ribW = bw * 0.21;
+    const boxTop = -bh * 0.42;
+
+    // 1. Subtle celebratory backlight halo
+    drawBokehDisc(ctx, 0, size * 0.05, size * 1.45, palette.glintRgb, 0.14 * alpha, 1.0);
+
+    // 2. Shaded 3D gift body
+    const bodyGrad = ctx.createLinearGradient(-bw * 0.5, boxTop, bw * 0.5, boxTop + bh);
+    bodyGrad.addColorStop(0, palette.bodyLight);
+    bodyGrad.addColorStop(0.52, palette.bodyMid);
+    bodyGrad.addColorStop(1, palette.bodyDark);
+    ctx.fillStyle = bodyGrad;
+    ctx.beginPath();
+    ctx.roundRect(-bw * 0.5, boxTop, bw, bh, size * 0.11);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+
+    // 3. Vertical & horizontal satin cross ribbons on box body
+    const vRibGrad = ctx.createLinearGradient(-ribW * 0.5, 0, ribW * 0.5, 0);
+    vRibGrad.addColorStop(0, palette.ribbonDark);
+    vRibGrad.addColorStop(0.45, palette.ribbonLight);
+    vRibGrad.addColorStop(1, palette.ribbonDark);
+    ctx.fillStyle = vRibGrad;
+    ctx.fillRect(-ribW * 0.5, boxTop, ribW, bh);
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.24)';
+    ctx.fillRect(-ribW * 0.12, boxTop, ribW * 0.24, bh);
+
+    // 4. Crisp shadow cast onto box top beneath overhanging lid
+    const underShadow = ctx.createLinearGradient(0, boxTop, 0, boxTop + size * 0.22);
+    underShadow.addColorStop(0, 'rgba(0, 0, 0, 0.48)');
+    underShadow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = underShadow;
+    ctx.fillRect(-bw * 0.5, boxTop, bw, size * 0.22);
+
+    // 5. Overhanging lid + vertical ribbon band across lid
+    const lidTop = boxTop - lidH * 0.55;
+    const lidGrad = ctx.createLinearGradient(-lidW * 0.5, lidTop, lidW * 0.5, lidTop + lidH);
+    lidGrad.addColorStop(0, palette.lidLight);
+    lidGrad.addColorStop(0.65, palette.bodyMid);
+    lidGrad.addColorStop(1, palette.lidDark);
+    ctx.fillStyle = lidGrad;
+    ctx.beginPath();
+    ctx.roundRect(-lidW * 0.5, lidTop, lidW, lidH, size * 0.08);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
+    ctx.lineWidth = 0.85;
+    ctx.stroke();
+
+    ctx.fillStyle = vRibGrad;
+    ctx.fillRect(-ribW * 0.53, lidTop, ribW * 1.06, lidH);
+
+    // 6. Sculpted 3D satin bow + notched ribbon tails resting on lid
+    const bowY = lidTop;
+    const loopW = size * 0.58;
+    const loopH = size * 0.44;
+
+    // Hanging notched ribbon tails
+    for (const dir of [-1, 1]) {
+        ctx.beginPath();
+        ctx.moveTo(dir * ribW * 0.15, bowY + size * 0.02);
+        ctx.lineTo(dir * size * 0.36, bowY + lidH * 0.95);
+        ctx.lineTo(dir * size * 0.2, bowY + lidH * 0.78);
+        ctx.lineTo(dir * size * 0.07, bowY + lidH * 0.96);
+        ctx.closePath();
+        ctx.fillStyle = palette.ribbonDark;
+        ctx.fill();
+    }
+
+    // Back inner loops & front luminous satin loops
+    for (const dir of [-1, 1]) {
+        ctx.beginPath();
+        ctx.moveTo(0, bowY + size * 0.03);
+        ctx.bezierCurveTo(
+            dir * loopW * 0.45,
+            bowY - loopH * 1.05,
+            dir * loopW * 1.15,
+            bowY - loopH * 0.65,
+            dir * loopW * 0.92,
+            bowY - loopH * 0.06
+        );
+        ctx.bezierCurveTo(
+            dir * loopW * 0.7,
+            bowY + size * 0.08,
+            dir * loopW * 0.22,
+            bowY + size * 0.05,
+            0,
+            bowY + size * 0.03
+        );
+        const loopGrad = ctx.createLinearGradient(0, bowY - loopH, dir * loopW, bowY);
+        loopGrad.addColorStop(0, palette.ribbonLight);
+        loopGrad.addColorStop(0.55, palette.ribbonMid);
+        loopGrad.addColorStop(1, palette.ribbonDark);
+        ctx.fillStyle = loopGrad;
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)';
+        ctx.lineWidth = 0.7;
+        ctx.stroke();
+    }
+
+    // Center wrapped bow knot
+    ctx.beginPath();
+    ctx.roundRect(-ribW * 0.38, bowY - size * 0.09, ribW * 0.76, size * 0.19, size * 0.07);
+    ctx.fillStyle = palette.ribbonLight;
+    ctx.fill();
+    ctx.strokeStyle = palette.ribbonDark;
+    ctx.lineWidth = 0.7;
+    ctx.stroke();
+
+    // 7. Winking optical sparkle star on upper bow edge
+    const wink = Math.max(0, Math.sin(time * 2.4 + sparklePhase));
+    if (wink > 0.15) {
+        drawOpticalGlint(ctx, size * 0.24, bowY - loopH * 0.55, size * 0.42, Math.pow(wink, 2) * 0.85, palette.glintRgb);
+    }
+
+    ctx.restore();
+}
+
+const createGeschenkFeuerwerkScene: SceneFactory = (width, height, densityScale) => {
+    const rand = createPrng(202611);
+    const fireworks = createBallisticFireworks(rand, width, height, densityScale, {
+        palette: ['248, 224, 150', '229, 4, 18', '255, 248, 224', '255, 110, 145', '212, 175, 55'],
+        outerOnly: true,
+        allowGrand: true,
+        brocadeScale: 1.22,
+        trailLength: 11,
+        brocadePhysics: true,
+        launchY: 0.88,
+        maxDesktop: 6,
+        maxMobile: 3,
+        spawnInterval: [0.46, 0.62],
+        immediateBursts: [
+            { xRatio: 0.16, yRatio: 0.19, tier: 'grand' },
+            { xRatio: 0.84, yRatio: 0.18, tier: 'grand' },
+            { xRatio: 0.5, yRatio: 0.11, tier: 'medium' },
+            { xRatio: 0.08, yRatio: 0.34, tier: 'medium' },
+            { xRatio: 0.91, yRatio: 0.33, tier: 'medium' },
+        ],
+    });
+
+    const pickFlankRatio = (index: number) => {
+        const left = index % 2 === 0;
+        return left ? 0.04 + rand() * 0.22 : 0.74 + rand() * 0.22;
+    };
+
+    const balloons = Array.from({ length: scaledCount(18, densityScale, 8) }, (_, i) => {
+        const slot = i % 10;
+        let radius: number;
+        let depth: number;
+        let alpha: number;
+        let vy: number;
+
+        if (slot < 2) {
+            radius = 11 + rand() * 5;
+            depth = 0.2;
+            alpha = 0.56 + rand() * 0.12;
+            vy = -(16 + rand() * 9);
+        } else if (slot < 5) {
+            radius = 19 + rand() * 7;
+            depth = 0.42;
+            alpha = 0.75 + rand() * 0.1;
+            vy = -(24 + rand() * 11);
+        } else if (slot < 8) {
+            radius = 33 + rand() * 10;
+            depth = 0.72;
+            alpha = 0.9 + rand() * 0.06;
+            vy = -(32 + rand() * 13);
+        } else {
+            radius = 48 + rand() * 14;
+            depth = 0.95;
+            alpha = 0.94 + rand() * 0.05;
+            vy = -(38 + rand() * 14);
+        }
+
+        return {
+            x: pickFlankRatio(i) * width,
+            y: (0.08 + rand() * 0.95) * height,
+            radius,
+            vy,
+            driftAmp: 9 + depth * 11 + rand() * 8,
+            driftSpeed: 0.5 + rand() * 0.6,
+            phase: rand() * Math.PI * 2,
+            tilt: (rand() - 0.5) * 0.18,
+            depth,
+            alpha,
+            palette: BALLOON_PALETTES[i % BALLOON_PALETTES.length],
+        };
+    });
+
+    const giftBoxes = Array.from({ length: scaledCount(12, densityScale, 6) }, (_, i) => {
+        const slot = i % 8;
+        let size: number;
+        let depth: number;
+        let alpha: number;
+        let vy: number;
+
+        if (slot < 2) {
+            size = 11 + rand() * 5;
+            depth = 0.22;
+            alpha = 0.62;
+            vy = 24 + rand() * 14;
+        } else if (slot < 4) {
+            size = 19 + rand() * 6;
+            depth = 0.42;
+            alpha = 0.8;
+            vy = 34 + rand() * 16;
+        } else if (slot < 6) {
+            size = 30 + rand() * 8;
+            depth = 0.74;
+            alpha = 0.93;
+            vy = 44 + rand() * 18;
+        } else {
+            size = 42 + rand() * 10;
+            depth = 0.95;
+            alpha = 0.96;
+            vy = 52 + rand() * 20;
+        }
+
+        return {
+            x: pickFlankRatio(i + 1) * width,
+            y: (-0.1 + rand() * 1.05) * height,
+            size,
+            vy,
+            rot: (rand() - 0.5) * 0.28,
+            rotSpeed: (rand() - 0.5) * 0.3,
+            bobAmp: 7 + depth * 7 + rand() * 5,
+            phase: rand() * Math.PI * 2,
+            depth,
+            alpha,
+            palette: GIFT_PALETTES[i % GIFT_PALETTES.length],
+        };
+    });
+
+    const confettiColors: Array<[number, number, number]> = [
+        [248, 224, 150],
+        [229, 4, 18],
+        [212, 175, 55],
+        [255, 246, 228],
+        [244, 114, 148],
+    ];
+
+    const confetti = Array.from({ length: scaledCount(48, densityScale, 18) }, (_, i) => ({
+        x: (i % 2 === 0 ? 0.02 + rand() * 0.27 : 0.71 + rand() * 0.27) * width,
+        y: rand() * height,
+        vx: (rand() - 0.5) * 26,
+        vy: 38 + rand() * 52,
+        w: 6.5 + rand() * 6.5,
+        h: 3.5 + rand() * 4.5,
+        rot: rand() * Math.PI * 2,
+        vRot: (rand() - 0.5) * 4.2,
+        tilt: rand() * Math.PI * 2,
+        vTilt: 3.2 + rand() * 4.5,
+        curled: i % 5 === 0,
+        color: confettiColors[i % confettiColors.length],
+    }));
+
+    const stardust = Array.from({ length: scaledCount(26, densityScale, 10) }, (_, i) => ({
+        xRatio: i % 2 === 0 ? 0.04 + rand() * 0.28 : 0.68 + rand() * 0.28,
+        yRatio: 0.08 + rand() * 0.84,
+        size: 3 + rand() * 4.5,
+        speed: 1.2 + rand() * 1.8,
+        phase: rand() * Math.PI * 2,
+        rgb: i % 3 === 0 ? '255, 248, 224' : i % 2 === 0 ? '248, 224, 150' : '255, 160, 180',
+    }));
+
+    return {
+        render(ctx, w, h, dt, time, isMobile) {
+            const mobileScale = isMobile ? 0.68 : 1;
+
+            // Update rising varied-size balloons and top-to-bottom falling gift boxes
+            for (let i = 0; i < balloons.length; i++) {
+                const b = balloons[i];
+                const scaledR = b.radius * mobileScale;
+                b.y += b.vy * dt;
+                if (b.y < -(scaledR * 3.8 + 40)) {
+                    b.y = h + scaledR * 1.4 + 40;
+                    const flank = i % 2 === 0 ? 0.04 + rand() * 0.22 : 0.74 + rand() * 0.22;
+                    b.x = (isMobile ? (i % 2 === 0 ? 0.05 + rand() * 0.14 : 0.81 + rand() * 0.14) : flank) * w;
+                }
+            }
+
+            for (let i = 0; i < giftBoxes.length; i++) {
+                const g = giftBoxes[i];
+                const scaledSize = g.size * mobileScale;
+                g.y += g.vy * dt;
+                if (g.y > h + scaledSize * 2.2 + 40) {
+                    g.y = -(scaledSize * 2.2 + 30 + rand() * 60);
+                    const flank = i % 2 === 0 ? 0.05 + rand() * 0.2 : 0.75 + rand() * 0.2;
+                    g.x = (isMobile ? (i % 2 === 0 ? 0.05 + rand() * 0.12 : 0.83 + rand() * 0.12) : flank) * w;
+                }
+            }
+
+            // Layer 1 (source-over): Background depth balloons & distant gift boxes
+            ctx.save();
+            ctx.globalCompositeOperation = 'source-over';
+            for (const b of balloons) {
+                if (b.depth >= 0.5) continue;
+                const drawX = b.x + Math.sin(time * b.driftSpeed + b.phase) * b.driftAmp;
+                const tilt = b.tilt + Math.sin(time * 0.9 + b.phase) * 0.06;
+                drawLuxuryBalloon(ctx, drawX, b.y, b.radius * mobileScale, tilt, time * 2.2 + b.phase, b.palette, b.alpha);
+            }
+            for (const g of giftBoxes) {
+                if (g.depth >= 0.45) continue;
+                const drawX = g.x + Math.sin(time * 0.7 + g.phase) * g.bobAmp;
+                const rot = g.rot + Math.sin(time * 0.85 + g.phase) * 0.08 + Math.sin(time * g.rotSpeed) * 0.05;
+                drawLuxuryGiftBox(ctx, drawX, g.y, g.size * mobileScale, rot, time, g.phase, g.palette, g.alpha);
+            }
+            ctx.restore();
+
+            // Layer 2 (lighter): Grand brocade fireworks & subtle celebratory stardust bokeh
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            fireworks.render(ctx, w, h, dt, time, isMobile);
+
+            for (const sd of stardust) {
+                const tw = Math.pow(Math.max(0, Math.sin(time * sd.speed + sd.phase)), 2);
+                drawBokehDisc(ctx, sd.xRatio * w, sd.yRatio * h, sd.size, sd.rgb, tw * 0.42);
+            }
+            ctx.restore();
+
+            // Layer 3 (source-over): Foreground hero balloons, 3D gift boxes & tumbling foil confetti
+            ctx.save();
+            ctx.globalCompositeOperation = 'source-over';
+            for (const b of balloons) {
+                if (b.depth < 0.5) continue;
+                const drawX = b.x + Math.sin(time * b.driftSpeed + b.phase) * b.driftAmp;
+                const tilt = b.tilt + Math.sin(time * 0.9 + b.phase) * 0.06;
+                drawLuxuryBalloon(ctx, drawX, b.y, b.radius * mobileScale, tilt, time * 2.4 + b.phase, b.palette, b.alpha);
+            }
+
+            for (const g of giftBoxes) {
+                if (g.depth < 0.45) continue;
+                const drawX = g.x + Math.sin(time * 0.7 + g.phase) * g.bobAmp;
+                const rot = g.rot + Math.sin(time * 0.85 + g.phase) * 0.08 + Math.sin(time * g.rotSpeed) * 0.05;
+                drawLuxuryGiftBox(ctx, drawX, g.y, g.size * mobileScale, rot, time, g.phase, g.palette, g.alpha);
+            }
+
+            for (const c of confetti) {
+                c.x += (c.vx + Math.sin(time * 1.5 + c.tilt) * 20) * dt;
+                c.y += c.vy * dt;
+                c.rot += c.vRot * dt;
+                c.tilt += c.vTilt * dt;
+                if (c.y > h + 22) {
+                    c.y = -22;
+                    c.x = (rand() < 0.5 ? 0.02 + rand() * 0.27 : 0.71 + rand() * 0.27) * w;
+                }
+
+                const shimmer = Math.abs(Math.cos(c.tilt));
+                const spec = Math.pow(shimmer, 4) * 0.65;
+                const r = Math.round(c.color[0] + (255 - c.color[0]) * spec);
+                const gr = Math.round(c.color[1] + (255 - c.color[1]) * spec);
+                const bl = Math.round(c.color[2] + (255 - c.color[2]) * spec);
+
+                ctx.save();
+                ctx.translate(c.x, c.y);
+                ctx.rotate(c.rot);
+                ctx.scale(1, Math.max(0.18, shimmer));
+                if (c.curled) {
+                    ctx.beginPath();
+                    ctx.moveTo(-c.w * 0.9, 0);
+                    ctx.quadraticCurveTo(-c.w * 0.3, -c.h * 0.8, 0, 0);
+                    ctx.quadraticCurveTo(c.w * 0.3, c.h * 0.8, c.w * 0.9, 0);
+                    ctx.strokeStyle = `rgba(${r}, ${gr}, ${bl}, 0.9)`;
+                    ctx.lineWidth = 2.2;
+                    ctx.lineCap = 'round';
+                    ctx.stroke();
+                } else {
+                    ctx.fillStyle = `rgba(${r}, ${gr}, ${bl}, 0.9)`;
+                    ctx.fillRect(-c.w * 0.5, -c.h * 0.5, c.w, c.h);
+                }
+                ctx.restore();
+            }
+            ctx.restore();
+        },
+    };
+};
+
 interface HybridSceneConfig {
     baseBg: string;
-    image: string;
+    image?: string;
     vignetteClass: string;
     factory: SceneFactory;
 }
 
 const SCENE_CONFIG: Record<HybridEffectId, HybridSceneConfig> = {
+    'geschenk-feuerwerk': {
+        baseBg: 'bg-transparent',
+        vignetteClass:
+            'bg-[radial-gradient(ellipse_at_center,rgba(5,3,6,0.22)_0%,rgba(4,2,5,0.08)_52%,rgba(4,2,6,0.34)_100%)]',
+        factory: createGeschenkFeuerwerkScene,
+    },
     'exklusiv-aktion': {
         baseBg: 'bg-[#050304]',
         image: '/images/campaign-effects/exklusiv-aktion-bg.webp',
@@ -2479,6 +3146,7 @@ export function HybridLuxuryScene({ effectId }: { effectId: HybridEffectId }) {
     const [imgLoaded, setImgLoaded] = useState(false);
 
     useEffect(() => {
+        if (!sceneConfig.image) return;
         setImgLoaded(false);
         const frame = requestAnimationFrame(() => {
             if (imgRef.current?.complete && imgRef.current.naturalWidth > 0) {
@@ -2572,22 +3240,24 @@ export function HybridLuxuryScene({ effectId }: { effectId: HybridEffectId }) {
             className={`pointer-events-none select-none fixed inset-0 overflow-hidden z-0 ${sceneConfig.baseBg}`}
         >
             {/* Photorealistic 1920x1080 WebP Scene Layer with Smooth Fade-in & GPU Parallax */}
-            <div
-                ref={backdropLayerRef}
-                className="absolute inset-0 will-change-transform transition-opacity duration-500"
-                style={{ opacity: imgLoaded ? 1 : 0, transform: 'scale(1.045)' }}
-            >
-                <img
-                    key={effectId}
-                    ref={imgRef}
-                    src={sceneConfig.image}
-                    alt=""
-                    decoding="async"
-                    fetchPriority="high"
-                    onLoad={() => setImgLoaded(true)}
-                    className="w-full h-full object-cover object-center"
-                />
-            </div>
+            {sceneConfig.image && (
+                <div
+                    ref={backdropLayerRef}
+                    className="absolute inset-0 will-change-transform transition-opacity duration-500"
+                    style={{ opacity: imgLoaded ? 1 : 0, transform: 'scale(1.045)' }}
+                >
+                    <img
+                        key={effectId}
+                        ref={imgRef}
+                        src={sceneConfig.image}
+                        alt=""
+                        decoding="async"
+                        fetchPriority="high"
+                        onLoad={() => setImgLoaded(true)}
+                        className="w-full h-full object-cover object-center"
+                    />
+                </div>
+            )}
 
             {/* Center readability vignette keeping flanking artwork luminous */}
             <div className={`absolute inset-0 ${sceneConfig.vignetteClass}`} />

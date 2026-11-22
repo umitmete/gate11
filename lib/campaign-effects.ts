@@ -12,6 +12,7 @@
 
 export type CampaignEffectId =
     | 'none'
+    | 'geschenk-feuerwerk'
     | 'exklusiv-aktion'
     | 'turbo-night'
     | 'winter-flotte'
@@ -42,6 +43,7 @@ export interface CampaignEffectDefinition {
     modalBorderClass: string;
     topBarClass: string;
     backdropImage?: string;
+    overlayClass?: string;
 }
 
 export const CAMPAIGN_EFFECTS: CampaignEffectDefinition[] = [
@@ -55,6 +57,20 @@ export const CAMPAIGN_EFFECTS: CampaignEffectDefinition[] = [
         accentBorder: 'border-white/15',
         modalBorderClass: 'border-primary/35 shadow-[0_0_60px_rgba(0,0,0,0.85)]',
         topBarClass: 'bg-gradient-to-r from-primary/30 via-primary to-primary/30',
+    },
+    {
+        id: 'geschenk-feuerwerk',
+        label: 'Geschenk-Feuerwerk',
+        shortLabel: '🎈 Geschenk-Feuerwerk',
+        description:
+            'Transparenter Blur-Hintergrund über der Startseite mit großen Feuerwerken, Ballons, Geschenkboxen & Konfetti.',
+        emoji: '🎈',
+        previewBg: 'from-[#35050f] via-[#221706] to-[#0b0b0f]',
+        accentBorder: 'border-amber-400/50',
+        modalBorderClass:
+            'border-primary/60 ring-1 ring-red-400/30 shadow-[0_0_95px_rgba(212,175,55,0.34),0_0_55px_rgba(229,4,18,0.26)]',
+        topBarClass: 'bg-gradient-to-r from-[#E50412] via-primary to-[#E50412]',
+        overlayClass: 'bg-black/40 backdrop-blur-[5px]',
     },
     {
         id: 'exklusiv-aktion',

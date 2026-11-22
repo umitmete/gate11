@@ -41,6 +41,7 @@ export function CampaignBackdropEffects({ effectId }: { effectId: CampaignEffect
 }
 
 const EMBLEM_ICONS: Partial<Record<CampaignEffectId, ComponentType<{ className?: string }>>> = {
+    'geschenk-feuerwerk': Gift,
     'exklusiv-aktion': Gift,
     'turbo-night': Gauge,
     'winter-flotte': TreePine,
