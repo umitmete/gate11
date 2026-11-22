@@ -5,6 +5,8 @@ import { translateCampaignFields } from '@/lib/translation-service';
 import { resolveCampaignEffect } from '@/lib/campaign-effects';
 import {
     deactivateExpiredCampaigns,
+    deleteCampaignImage,
+    isManagedCampaignImageUrl,
     parseStartDate,
     parseEndDate,
 } from '@/lib/services/campaign-storage';
@@ -27,6 +29,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+    let uploadedImageUrl: string | null = null;
     try {
         const body = await request.json();
         const {
@@ -44,7 +47,14 @@ export async function POST(request: Request) {
             endDate,
         } = body;
 
+        if (isManagedCampaignImageUrl(imageUrl)) {
+            uploadedImageUrl = imageUrl;
+        }
+
         if (!title || !description) {
+            if (uploadedImageUrl) {
+                await deleteCampaignImage(uploadedImageUrl);
+            }
             return NextResponse.json({ error: 'Title and description are required' }, { status: 400 });
         }
 
@@ -78,6 +88,9 @@ export async function POST(request: Request) {
         revalidatePath('/');
         return NextResponse.json(campaign, { status: 201 });
     } catch (error) {
+        if (uploadedImageUrl) {
+            await deleteCampaignImage(uploadedImageUrl);
+        }
         console.error('Failed to create campaign:', error);
         return NextResponse.json({ error: 'Failed to create campaign' }, { status: 500 });
     }

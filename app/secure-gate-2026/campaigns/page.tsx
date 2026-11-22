@@ -61,6 +61,106 @@ function formatCampaignDateRange(startDate?: string | null, endDate?: string | n
     return 'Zeitraum: Unbegrenzt gültig';
 }
 
+const MAX_OPTIMIZED_IMAGE_BYTES = 3.5 * 1024 * 1024;
+const MAX_IMAGE_DIMENSION = 1600;
+
+function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number): Promise<Blob | null> {
+    return new Promise((resolve) => {
+        canvas.toBlob((blob) => resolve(blob), type, quality);
+    });
+}
+
+async function decodeImageSource(
+    file: File
+): Promise<{ width: number; height: number; draw: (ctx: CanvasRenderingContext2D, w: number, h: number) => void; cleanup: () => void }> {
+    if (typeof createImageBitmap === 'function') {
+        const bitmap = await createImageBitmap(file);
+        return {
+            width: bitmap.width,
+            height: bitmap.height,
+            draw: (ctx, w, h) => ctx.drawImage(bitmap, 0, 0, w, h),
+            cleanup: () => bitmap.close(),
+        };
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    try {
+        const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+            const el = new Image();
+            el.onload = () => resolve(el);
+            el.onerror = () => reject(new Error('Image decode failed'));
+            el.src = objectUrl;
+        });
+        return {
+            width: img.naturalWidth || img.width,
+            height: img.naturalHeight || img.height,
+            draw: (ctx, w, h) => ctx.drawImage(img, 0, 0, w, h),
+            cleanup: () => URL.revokeObjectURL(objectUrl),
+        };
+    } catch (err) {
+        URL.revokeObjectURL(objectUrl);
+        throw err;
+    }
+}
+
+async function encodeScaledCanvas(
+    source: { width: number; height: number; draw: (ctx: CanvasRenderingContext2D, w: number, h: number) => void },
+    maxDim: number,
+    webpQuality: number,
+    jpegQuality: number
+): Promise<Blob | null> {
+    const scale = Math.min(1, maxDim / Math.max(source.width, source.height));
+    const targetW = Math.max(1, Math.round(source.width * scale));
+    const targetH = Math.max(1, Math.round(source.height * scale));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = targetW;
+    canvas.height = targetH;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+
+    source.draw(ctx, targetW, targetH);
+
+    let blob = await canvasToBlob(canvas, 'image/webp', webpQuality);
+    if (!blob || blob.type !== 'image/webp') {
+        blob = await canvasToBlob(canvas, 'image/jpeg', jpegQuality);
+    }
+    return blob;
+}
+
+async function optimizeCampaignImage(file: File): Promise<File> {
+    if (file.type === 'image/gif' && file.size <= MAX_OPTIMIZED_IMAGE_BYTES) {
+        return file;
+    }
+
+    try {
+        const source = await decodeImageSource(file);
+        try {
+            let blob = await encodeScaledCanvas(source, MAX_IMAGE_DIMENSION, 0.84, 0.85);
+            if (blob && blob.size > MAX_OPTIMIZED_IMAGE_BYTES) {
+                blob = await encodeScaledCanvas(source, 1280, 0.72, 0.72);
+            }
+
+            if (!blob || blob.size > MAX_OPTIMIZED_IMAGE_BYTES) {
+                throw new Error('Das Bild ist zu groß (max. 4 MB) oder das Format wird nicht unterstützt.');
+            }
+
+            const baseName = (file.name || 'campaign').replace(/\.[^/.]+$/, '') || 'campaign';
+            const ext = blob.type === 'image/webp' ? 'webp' : 'jpg';
+            return new File([blob], `${baseName}.${ext}`, { type: blob.type });
+        } finally {
+            source.cleanup();
+        }
+    } catch (err) {
+        if (file.size <= MAX_OPTIMIZED_IMAGE_BYTES) {
+            return file;
+        }
+        throw err instanceof Error
+            ? err
+            : new Error('Das Bild ist zu groß (max. 4 MB) oder das Format wird nicht unterstützt.');
+    }
+}
+
 export default function AdminCampaignsPage() {
     const [campaigns, setCampaigns] = useState<Campaign[]>([]);
     const [loading, setLoading] = useState(true);
@@ -190,7 +290,12 @@ export default function AdminCampaignsPage() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        if (!file.type.startsWith('image/')) {
+        const isSvg = file.type.toLowerCase().includes('svg') || /\.svg$/i.test(file.name);
+        const isSupportedImage =
+            !isSvg &&
+            (file.type.startsWith('image/') || /\.(jpe?g|png|webp|gif|avif|heic|heif)$/i.test(file.name));
+
+        if (!isSupportedImage) {
             setErrorMessage('Bitte wählen Sie eine gültige Bilddatei aus (JPG, PNG, WEBP).');
             return;
         }
@@ -251,13 +356,15 @@ export default function AdminCampaignsPage() {
             return;
         }
 
+        let newlyUploadedImageUrl: string | null = null;
         try {
             let finalImageUrl = formData.imageUrl;
 
-            // Upload newly selected file only on save
+            // Upload newly selected file only on save (client-side optimized to stay well below 4.5 MB limit)
             if (selectedFile) {
+                const fileToUpload = await optimizeCampaignImage(selectedFile);
                 const uploadBody = new FormData();
-                uploadBody.append('file', selectedFile);
+                uploadBody.append('file', fileToUpload);
 
                 const uploadRes = await fetch('/api/admin/campaigns/upload', {
                     method: 'POST',
@@ -265,11 +372,15 @@ export default function AdminCampaignsPage() {
                 });
 
                 if (!uploadRes.ok) {
+                    if (uploadRes.status === 413) {
+                        throw new Error('Das Bild ist zu groß für den Upload. Bitte wählen Sie ein kleineres Bild.');
+                    }
                     const errData = await uploadRes.json().catch(() => ({}));
                     throw new Error(errData.error || 'Bild konnte nicht hochgeladen werden.');
                 }
 
                 const uploadData = await uploadRes.json();
+                newlyUploadedImageUrl = uploadData.url;
                 finalImageUrl = uploadData.url;
             }
 
@@ -310,6 +421,13 @@ export default function AdminCampaignsPage() {
             setTimeout(() => setStatusMessage(null), 3500);
             fetchCampaigns();
         } catch (error: any) {
+            if (newlyUploadedImageUrl) {
+                fetch('/api/admin/campaigns/upload', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: newlyUploadedImageUrl }),
+                }).catch(() => {});
+            }
             console.error('Save error:', error);
             setErrorMessage(error?.message || 'Ein Fehler ist aufgetreten.');
         } finally {

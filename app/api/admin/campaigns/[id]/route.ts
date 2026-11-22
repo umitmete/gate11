@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/db';
 import {
     deleteCampaignImage,
+    isManagedCampaignImageUrl,
     parseStartDate,
     parseEndDate,
 } from '@/lib/services/campaign-storage';
@@ -15,6 +16,8 @@ export async function PUT(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    let existingImageUrl: string | null = null;
+    let candidateNewImageUrl: string | null = null;
     try {
         const { id } = await params;
         const body = await request.json();
@@ -32,6 +35,10 @@ export async function PUT(
             startDate,
             endDate,
         } = body;
+
+        if (imageUrl !== undefined && isManagedCampaignImageUrl(imageUrl)) {
+            candidateNewImageUrl = imageUrl;
+        }
 
         const resolvedEffect =
             effectType !== undefined ? resolveCampaignEffect(effectType) : undefined;
@@ -55,10 +62,7 @@ export async function PUT(
             })
             : null;
 
-        // Eğer görsel güncelleniyor veya kaldırılıyorsa eski görseli depodan sil
-        if (imageUrl !== undefined && existing?.imageUrl && existing.imageUrl !== imageUrl) {
-            await deleteCampaignImage(existing.imageUrl);
-        }
+        existingImageUrl = existing?.imageUrl || null;
 
         // Eğer metin alanlarından biri güncellendiyse diğer dillere otomatik çevir
         let translations: string | undefined;
@@ -96,9 +100,17 @@ export async function PUT(
             },
         });
 
+        // DB güncellemesi başarılıysa ve görsel değiştirildiyse/kaldırıldıysa eski görseli depodan kalıcı sil
+        if (imageUrl !== undefined && existing?.imageUrl && existing.imageUrl !== imageUrl) {
+            await deleteCampaignImage(existing.imageUrl);
+        }
+
         revalidatePath('/');
         return NextResponse.json(updatedCampaign);
     } catch (error) {
+        if (candidateNewImageUrl && candidateNewImageUrl !== existingImageUrl) {
+            await deleteCampaignImage(candidateNewImageUrl);
+        }
         console.error('Failed to update campaign:', error);
         return NextResponse.json({ error: 'Failed to update campaign' }, { status: 500 });
     }
